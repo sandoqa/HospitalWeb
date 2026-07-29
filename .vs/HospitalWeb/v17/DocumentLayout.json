@@ -1,0 +1,476 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|c:\\users\\my pc2\\source\\repos\\hospitalweb\\hospitalweb\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|solutionrelative:hospitalweb\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|c:\\users\\my pc2\\source\\repos\\hospitalweb\\hospitalweb\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|solutionrelative:hospitalweb\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|c:\\users\\my pc2\\source\\repos\\hospitalweb\\hospitalweb\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|solutionrelative:hospitalweb\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|c:\\users\\my pc2\\source\\repos\\hospitalweb\\hospitalweb\\controllers\\trainingrotationscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|solutionrelative:hospitalweb\\controllers\\trainingrotationscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|c:\\users\\my pc2\\source\\repos\\hospitalweb\\hospitalweb\\controllers\\doctorscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|solutionrelative:hospitalweb\\controllers\\doctorscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|c:\\users\\my pc2\\source\\repos\\hospitalweb\\hospitalweb\\views\\doctors\\details.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|solutionrelative:hospitalweb\\views\\doctors\\details.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|c:\\users\\my pc2\\source\\repos\\hospitalweb\\hospitalweb\\views\\doctors\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|solutionrelative:hospitalweb\\views\\doctors\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|c:\\users\\my pc2\\source\\repos\\hospitalweb\\hospitalweb\\data\\accessimporter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|solutionrelative:hospitalweb\\data\\accessimporter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|c:\\users\\my pc2\\source\\repos\\hospitalweb\\hospitalweb\\controllers\\importcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|solutionrelative:hospitalweb\\controllers\\importcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Migrations\\20260729190631_AddDepartments.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:HospitalWeb\\Migrations\\20260729190631_AddDepartments.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|c:\\users\\my pc2\\source\\repos\\hospitalweb\\hospitalweb\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|solutionrelative:hospitalweb\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|c:\\users\\my pc2\\source\\repos\\hospitalweb\\hospitalweb\\models\\department.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|solutionrelative:hospitalweb\\models\\department.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|c:\\users\\my pc2\\source\\repos\\hospitalweb\\hospitalweb\\views\\trainingrotations\\edit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|solutionrelative:hospitalweb\\views\\trainingrotations\\edit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|c:\\users\\my pc2\\source\\repos\\hospitalweb\\hospitalweb\\views\\trainingrotations\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|solutionrelative:hospitalweb\\views\\trainingrotations\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|c:\\users\\my pc2\\source\\repos\\hospitalweb\\hospitalweb\\views\\trainingrotations\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|solutionrelative:hospitalweb\\views\\trainingrotations\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|c:\\users\\my pc2\\source\\repos\\hospitalweb\\hospitalweb\\views\\doctors\\edit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|solutionrelative:hospitalweb\\views\\doctors\\edit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|c:\\users\\my pc2\\source\\repos\\hospitalweb\\hospitalweb\\views\\doctors\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|solutionrelative:hospitalweb\\views\\doctors\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|c:\\users\\my pc2\\source\\repos\\hospitalweb\\hospitalweb\\models\\doctor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|solutionrelative:hospitalweb\\models\\doctor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|c:\\users\\my pc2\\source\\repos\\hospitalweb\\hospitalweb\\migrations\\20260729180620_adddoctorstartinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|solutionrelative:hospitalweb\\migrations\\20260729180620_adddoctorstartinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|c:\\users\\my pc2\\source\\repos\\hospitalweb\\hospitalweb\\models\\trainingrotation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|solutionrelative:hospitalweb\\models\\trainingrotation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Migrations\\20260729172447_InsertDepartmentsData.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:HospitalWeb\\Migrations\\20260729172447_InsertDepartmentsData.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Migrations\\20260729163712_AddUniqueDoctorDepartment.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:HospitalWeb\\Migrations\\20260729163712_AddUniqueDoctorDepartment.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Migrations\\20260729163207_UpdateDoctorModel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:HospitalWeb\\Migrations\\20260729163207_UpdateDoctorModel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Migrations\\20260729161824_AddDefaultDepartments.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:HospitalWeb\\Migrations\\20260729161824_AddDefaultDepartments.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Migrations\\20260729161618_InitialCreateDoctorSystem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:HospitalWeb\\Migrations\\20260729161618_InitialCreateDoctorSystem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|c:\\users\\my pc2\\source\\repos\\hospitalweb\\hospitalweb\\hospital.db||{25834150-CD7E-11D0-92DF-00A0C9138C45}",
+      "RelativeMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|solutionrelative:hospitalweb\\hospital.db||{25834150-CD7E-11D0-92DF-00A0C9138C45}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|c:\\users\\my pc2\\source\\repos\\hospitalweb\\hospitalweb\\migrations\\20260729154002_initialcreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{303449E6-17A0-42D3-8EEF-ACED5661A7B3}|HospitalWeb\\HospitalWeb.csproj|solutionrelative:hospitalweb\\migrations\\20260729154002_initialcreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Dockerfile",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Dockerfile",
+              "RelativeDocumentMoniker": "HospitalWeb\\Dockerfile",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Dockerfile",
+              "RelativeToolTip": "HospitalWeb\\Dockerfile",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-07-29T23:40:02.839Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "Doctor.cs",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Models\\Doctor.cs",
+              "RelativeDocumentMoniker": "HospitalWeb\\Models\\Doctor.cs",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Models\\Doctor.cs",
+              "RelativeToolTip": "HospitalWeb\\Models\\Doctor.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T15:55:36.29Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Views\\TrainingRotations\\Index.cshtml",
+              "RelativeDocumentMoniker": "HospitalWeb\\Views\\TrainingRotations\\Index.cshtml",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Views\\TrainingRotations\\Index.cshtml",
+              "RelativeToolTip": "HospitalWeb\\Views\\TrainingRotations\\Index.cshtml",
+              "ViewState": "AgIAAKQAAAAAAAAAAAAgwMEAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-07-29T17:26:51.345Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "Create.cshtml",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Views\\TrainingRotations\\Create.cshtml",
+              "RelativeDocumentMoniker": "HospitalWeb\\Views\\TrainingRotations\\Create.cshtml",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Views\\TrainingRotations\\Create.cshtml",
+              "RelativeToolTip": "HospitalWeb\\Views\\TrainingRotations\\Create.cshtml",
+              "ViewState": "AgIAAIABAAAAAAAAAAAgwJ0BAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-07-29T17:05:34.318Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Program.cs",
+              "RelativeDocumentMoniker": "HospitalWeb\\Program.cs",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Program.cs",
+              "RelativeToolTip": "HospitalWeb\\Program.cs",
+              "ViewState": "AgIAACsAAAAAAAAAAAAYwFwAAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T15:37:56.242Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Views\\Doctors\\Index.cshtml",
+              "RelativeDocumentMoniker": "HospitalWeb\\Views\\Doctors\\Index.cshtml",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Views\\Doctors\\Index.cshtml",
+              "RelativeToolTip": "HospitalWeb\\Views\\Doctors\\Index.cshtml",
+              "ViewState": "AgIAAH8AAAAAAAAAAAAnwJkAAAAyAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-07-29T16:45:44.261Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Details.cshtml",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Views\\Doctors\\Details.cshtml",
+              "RelativeDocumentMoniker": "HospitalWeb\\Views\\Doctors\\Details.cshtml",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Views\\Doctors\\Details.cshtml",
+              "RelativeToolTip": "HospitalWeb\\Views\\Doctors\\Details.cshtml",
+              "ViewState": "AgIAANUBAAAAAAAAAAAQwP0BAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-07-29T17:46:54.492Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "ImportController.cs",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Controllers\\ImportController.cs",
+              "RelativeDocumentMoniker": "HospitalWeb\\Controllers\\ImportController.cs",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Controllers\\ImportController.cs",
+              "RelativeToolTip": "HospitalWeb\\Controllers\\ImportController.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAYwDQAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T19:11:20.222Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "TrainingRotationsController.cs",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Controllers\\TrainingRotationsController.cs",
+              "RelativeDocumentMoniker": "HospitalWeb\\Controllers\\TrainingRotationsController.cs",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Controllers\\TrainingRotationsController.cs",
+              "RelativeToolTip": "HospitalWeb\\Controllers\\TrainingRotationsController.cs",
+              "ViewState": "AgIAAKoBAAAAAAAAAAAYwNsBAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T16:44:14.271Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "Edit.cshtml",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Views\\TrainingRotations\\Edit.cshtml",
+              "RelativeDocumentMoniker": "HospitalWeb\\Views\\TrainingRotations\\Edit.cshtml",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Views\\TrainingRotations\\Edit.cshtml",
+              "RelativeToolTip": "HospitalWeb\\Views\\TrainingRotations\\Edit.cshtml",
+              "ViewState": "AgIAAD8BAAAAAAAAAAAgwFwBAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-07-29T18:52:10.861Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\appsettings.json",
+              "RelativeDocumentMoniker": "HospitalWeb\\appsettings.json",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\appsettings.json",
+              "RelativeToolTip": "HospitalWeb\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-07-29T15:37:39.751Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "DoctorsController.cs",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Controllers\\DoctorsController.cs",
+              "RelativeDocumentMoniker": "HospitalWeb\\Controllers\\DoctorsController.cs",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Controllers\\DoctorsController.cs",
+              "RelativeToolTip": "HospitalWeb\\Controllers\\DoctorsController.cs",
+              "ViewState": "AgIAAAcCAAAAAAAAAAAswAkCAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T16:27:03.671Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "AccessImporter.cs",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Data\\AccessImporter.cs",
+              "RelativeDocumentMoniker": "HospitalWeb\\Data\\AccessImporter.cs",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Data\\AccessImporter.cs",
+              "RelativeToolTip": "HospitalWeb\\Data\\AccessImporter.cs",
+              "ViewState": "AgIAALsBAAAAAAAAAAAYwOwBAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T19:02:13.391Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "20260729190631_AddDepartments.cs",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Migrations\\20260729190631_AddDepartments.cs",
+              "RelativeDocumentMoniker": "HospitalWeb\\Migrations\\20260729190631_AddDepartments.cs",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Migrations\\20260729190631_AddDepartments.cs",
+              "RelativeToolTip": "HospitalWeb\\Migrations\\20260729190631_AddDepartments.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T19:06:31.731Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Department.cs",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Models\\Department.cs",
+              "RelativeDocumentMoniker": "HospitalWeb\\Models\\Department.cs",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Models\\Department.cs",
+              "RelativeToolTip": "HospitalWeb\\Models\\Department.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T15:56:17.29Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "ApplicationDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Data\\ApplicationDbContext.cs",
+              "RelativeDocumentMoniker": "HospitalWeb\\Data\\ApplicationDbContext.cs",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Data\\ApplicationDbContext.cs",
+              "RelativeToolTip": "HospitalWeb\\Data\\ApplicationDbContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T15:34:11.605Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "20260729163207_UpdateDoctorModel.cs",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Migrations\\20260729163207_UpdateDoctorModel.cs",
+              "RelativeDocumentMoniker": "HospitalWeb\\Migrations\\20260729163207_UpdateDoctorModel.cs",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Migrations\\20260729163207_UpdateDoctorModel.cs",
+              "RelativeToolTip": "HospitalWeb\\Migrations\\20260729163207_UpdateDoctorModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T16:32:07.252Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "Edit.cshtml",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Views\\Doctors\\Edit.cshtml",
+              "RelativeDocumentMoniker": "HospitalWeb\\Views\\Doctors\\Edit.cshtml",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Views\\Doctors\\Edit.cshtml",
+              "RelativeToolTip": "HospitalWeb\\Views\\Doctors\\Edit.cshtml",
+              "ViewState": "AgIAALMAAAAAAAAAAAAgwNAAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-07-29T18:13:09.981Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "20260729163712_AddUniqueDoctorDepartment.cs",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Migrations\\20260729163712_AddUniqueDoctorDepartment.cs",
+              "RelativeDocumentMoniker": "HospitalWeb\\Migrations\\20260729163712_AddUniqueDoctorDepartment.cs",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Migrations\\20260729163712_AddUniqueDoctorDepartment.cs",
+              "RelativeToolTip": "HospitalWeb\\Migrations\\20260729163712_AddUniqueDoctorDepartment.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T16:37:13.014Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "20260729180620_AddDoctorStartInfo.cs",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Migrations\\20260729180620_AddDoctorStartInfo.cs",
+              "RelativeDocumentMoniker": "HospitalWeb\\Migrations\\20260729180620_AddDoctorStartInfo.cs",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Migrations\\20260729180620_AddDoctorStartInfo.cs",
+              "RelativeToolTip": "HospitalWeb\\Migrations\\20260729180620_AddDoctorStartInfo.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T18:06:20.369Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "Create.cshtml",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Views\\Doctors\\Create.cshtml",
+              "RelativeDocumentMoniker": "HospitalWeb\\Views\\Doctors\\Create.cshtml",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Views\\Doctors\\Create.cshtml",
+              "RelativeToolTip": "HospitalWeb\\Views\\Doctors\\Create.cshtml",
+              "ViewState": "AgIAAHYAAAAAAAAAAAAgwJMAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-07-29T16:58:10.736Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "TrainingRotation.cs",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Models\\TrainingRotation.cs",
+              "RelativeDocumentMoniker": "HospitalWeb\\Models\\TrainingRotation.cs",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Models\\TrainingRotation.cs",
+              "RelativeToolTip": "HospitalWeb\\Models\\TrainingRotation.cs",
+              "ViewState": "AgIAADUAAAAAAAAAAAAkwFIAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T15:57:18.582Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "20260729172447_InsertDepartmentsData.cs",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Migrations\\20260729172447_InsertDepartmentsData.cs",
+              "RelativeDocumentMoniker": "HospitalWeb\\Migrations\\20260729172447_InsertDepartmentsData.cs",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Migrations\\20260729172447_InsertDepartmentsData.cs",
+              "RelativeToolTip": "HospitalWeb\\Migrations\\20260729172447_InsertDepartmentsData.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T17:24:48.067Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "20260729161824_AddDefaultDepartments.cs",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Migrations\\20260729161824_AddDefaultDepartments.cs",
+              "RelativeDocumentMoniker": "HospitalWeb\\Migrations\\20260729161824_AddDefaultDepartments.cs",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Migrations\\20260729161824_AddDefaultDepartments.cs",
+              "RelativeToolTip": "HospitalWeb\\Migrations\\20260729161824_AddDefaultDepartments.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T16:18:24.586Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "20260729161618_InitialCreateDoctorSystem.cs",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Migrations\\20260729161618_InitialCreateDoctorSystem.cs",
+              "RelativeDocumentMoniker": "HospitalWeb\\Migrations\\20260729161618_InitialCreateDoctorSystem.cs",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Migrations\\20260729161618_InitialCreateDoctorSystem.cs",
+              "RelativeToolTip": "HospitalWeb\\Migrations\\20260729161618_InitialCreateDoctorSystem.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T16:16:18.139Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "20260729154002_InitialCreate.cs",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Migrations\\20260729154002_InitialCreate.cs",
+              "RelativeDocumentMoniker": "HospitalWeb\\Migrations\\20260729154002_InitialCreate.cs",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\Migrations\\20260729154002_InitialCreate.cs",
+              "RelativeToolTip": "HospitalWeb\\Migrations\\20260729154002_InitialCreate.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-29T15:40:02.787Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "hospital.db",
+              "DocumentMoniker": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\hospital.db",
+              "RelativeDocumentMoniker": "HospitalWeb\\hospital.db",
+              "ToolTip": "C:\\Users\\My PC2\\source\\repos\\HospitalWeb\\HospitalWeb\\hospital.db",
+              "RelativeToolTip": "HospitalWeb\\hospital.db",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGHSURBVDhPjZPNSxtBGIefXTcSYlv2T1CKWAVFSgsVvClCexBEqteK5yJEl22gheLBD4KCIPpneGwp4hcKNdQqiGDxkNBW8WI\u002BDtltkp2Ml\u002B6iO8b4wMB8/N6HeWFG4z8J20qDbPbXKlrGqzKUTCaPgi0pZTBP2FOyXC7XHAl7Sk5//pSzLKs7KAL0m4t6vBsbNx83RTdvSh4sME2T1ZVlXNc1DV1uhs\u002BVFtZ3f8hvOymlFb8dv065wclZhq/b\u002B2Rzea6yOda\u002BbPHz\u002BDQcC1AEhq7jOC4vutp52d2B4zoYhhILUE48IahUyoiqoCoEXqWC54lwLEARlEolNGBrL8XG7nc0DVIHhzjuv3AU7hI873zGyOAATx7FEJ7g4vKc33//MLe4xOmvs3BcFfgMvenndV8vhXyBmY82\u002BWyWaLQxHKstACgWHQwd3sctIpGGWy/X515BW\u002BtTPsQn6O15xcLcDC3N6le5VwDQFIsx\u002BnY4vB1QV1APzZ8k7Mk0aOod70RmZucXWgCuAZnTw6qHi\u002BiqAAAAAElFTkSuQmCC",
+              "WhenOpened": "2026-07-29T16:07:39.951Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

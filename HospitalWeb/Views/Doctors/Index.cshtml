@@ -1,0 +1,501 @@
+﻿@model IEnumerable<HospitalWeb.Models.Doctor>
+
+@{
+    ViewData["Title"] = "الأطباء";
+
+    var warningDays =
+        ViewBag.WarningDays as Dictionary<int, int>
+        ?? new Dictionary<int, int>();
+}
+
+
+
+<h1 class="mb-4">
+    قائمة الأطباء
+</h1>
+<h5 class="text-primary">
+    عدد الأطباء: @Model.Count()
+</h5>
+
+@if (warningDays.Count > 0)
+{
+    <div class="alert alert-danger">
+        يوجد @warningDays.Count طبيب قريب من انتهاء الروتيشن
+    </div>
+}
+
+
+
+<div class="row mb-3">
+
+    <div class="col-md-6">
+
+        <form asp-action="Index" method="get">
+
+            <div class="input-group">
+
+                <input type="text"
+                       id="searchBox"
+                       class="form-control"
+                       placeholder="بحث باسم الطبيب أو رقم الهاتف" />
+
+
+                <button type="submit"
+                        class="btn btn-primary">
+                    بحث
+                </button>
+
+
+                <a asp-action="Index"
+                   class="btn btn-secondary">
+                    مسح
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+
+    <div class="col-md-6 text-end">
+
+        <a asp-action="Create"
+           class="btn btn-success">
+
+            + إضافة طبيب جديد
+
+        </a>
+        <a asp-controller="Import"
+           asp-action="Access"
+           class="btn btn-dark"
+           onclick="return confirm('هل تريد استيراد بيانات Access؟')">
+
+            📥 استيراد بيانات Access
+
+        </a>
+
+    </div>
+
+</div>
+
+
+
+
+
+<table class="table table-bordered table-striped text-center align-middle">
+
+
+    <thead class="table-dark">
+
+        <tr>
+
+            <th>الصورة</th>
+            <th>الاسم</th>
+            <th>رقم الطبيب</th>
+            <th>الجامعة</th>
+            <th>سنة التخرج</th>
+            <th>الهاتف</th>
+            <th>التنبيه</th>
+            <th>التدريبات</th>
+            <th>الإجراءات</th>
+
+        </tr>
+
+    </thead>
+
+
+
+    <tbody>
+
+
+        @foreach (var item in Model)
+        {
+
+            int days = -1;
+
+            warningDays.TryGetValue(item.Id, out days);
+
+
+
+            string rowClass = "";
+
+            if (days == 1)
+            {
+                rowClass = "danger-blink";
+            }
+            else if (days == 2)
+            {
+                rowClass = "orange-blink";
+            }
+            else if (days == 3)
+            {
+                rowClass = "yellow-blink";
+            }
+            else if (days == 4)
+            {
+                rowClass = "blue-blink";
+            }
+            else if (days == 5)
+            {
+                rowClass = "green-blink";
+            }
+
+
+            <tr class="@rowClass">
+
+
+                <td>
+
+                    @if (!string.IsNullOrEmpty(item.ImagePath))
+                    {
+                        <img src="@item.ImagePath"
+                             class="img-thumbnail"
+                             style="
+                width:70px;
+                height:70px;
+                object-fit:cover;
+                border-radius:5px;
+             " />
+                    }
+                    else
+                    {
+                        <span class="text-muted">
+                            لا توجد صورة
+                        </span>
+                    }
+
+                </td>
+
+
+
+                <td>
+                    @item.الاسم
+                </td>
+
+
+
+                <td>
+                    @item.رقم_الطبيب
+                </td>
+
+
+
+                <td>
+                    @item.الجامعة
+                </td>
+
+
+
+                <td>
+                    @item.سنة_التخرج
+                </td>
+
+
+
+                <td>
+                    @item.Phone
+                </td>
+
+
+
+                <td>
+
+                    @if (days > 0)
+                    {
+                        <span class="badge bg-danger">
+                            باقي @days يوم
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">
+                            طبيعي
+                        </span>
+                    }
+
+                </td>
+
+
+
+                <td>
+
+                    @if (item.TrainingRotations != null &&
+                                    item.TrainingRotations.Count > 0)
+                    {
+                        <span class="badge bg-primary">
+                            @item.TrainingRotations.Count تدريب
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">
+                            لا يوجد
+                        </span>
+                    }
+
+                </td>
+
+
+
+
+                <td>
+
+                    <a asp-action="Details"
+                       asp-route-id="@item.Id"
+                       class="btn btn-info btn-sm">
+                        ملف الطبيب
+                    </a>
+
+
+                    <a asp-action="Edit"
+                       asp-route-id="@item.Id"
+                       class="btn btn-warning btn-sm">
+                        تعديل
+                    </a>
+
+
+                    <a asp-action="Delete"
+                       asp-route-id="@item.Id"
+                       class="btn btn-danger btn-sm">
+                        حذف
+                    </a>
+
+                </td>
+
+
+            </tr>
+
+        }
+
+
+    </tbody>
+
+
+</table>
+
+
+
+
+
+<style>
+
+    .table > tbody > tr.danger-blink > *,
+    .table > tbody > tr.orange-blink > *,
+    .table > tbody > tr.yellow-blink > *,
+    .table > tbody > tr.blue-blink > *,
+    .table > tbody > tr.green-blink > * {
+        background-color: transparent !important;
+    }
+
+
+    /* تشغيل الوميض على الصف */
+    tr.danger-blink,
+    tr.orange-blink,
+    tr.yellow-blink,
+    tr.blue-blink,
+    tr.green-blink {
+        animation-duration: 1.5s;
+        animation-iteration-count: infinite;
+        font-weight: bold;
+    }
+
+
+    /* 1 يوم أحمر */
+    tr.danger-blink {
+        animation-name: redBlink;
+    }
+
+
+    /* 2 يوم برتقالي */
+    tr.orange-blink {
+        animation-name: orangeBlink;
+    }
+
+
+    /* 3 أيام أصفر */
+    tr.yellow-blink {
+        animation-name: yellowBlink;
+    }
+
+
+    /* 4 أيام أزرق */
+    tr.blue-blink {
+        animation-name: blueBlink;
+    }
+
+
+    /* 5 أيام أخضر */
+    tr.green-blink {
+        animation-name: greenBlink;
+    }
+
+
+
+    @@keyframes redBlink {
+
+        0%, 100% {
+            background-color: red;
+            color: white;
+        }
+
+        50% {
+            background-color: white;
+            color: black;
+        }
+    }
+
+
+
+    @@keyframes orangeBlink {
+
+        0%, 100% {
+            background-color: #ff9900;
+            color: black;
+        }
+
+        50% {
+            background-color: white;
+        }
+    }
+
+
+
+    @@keyframes yellowBlink {
+
+        0%, 100% {
+            background-color: #ffff66;
+            color: black;
+        }
+
+        50% {
+            background-color: white;
+        }
+    }
+
+
+
+    @@keyframes blueBlink {
+
+        0%, 100% {
+            background-color: #3399ff;
+            color: white;
+        }
+
+        50% {
+            background-color: white;
+            color: black;
+        }
+    }
+
+
+
+    @@keyframes greenBlink {
+
+        0%, 100% {
+            background-color: #33cc66;
+            color: white;
+        }
+
+        50% {
+            background-color: white;
+            color: black;
+        }
+    }
+
+
+
+    /* الأزرار تبقى ظاهرة */
+    .danger-blink .btn,
+    .orange-blink .btn,
+    .yellow-blink .btn,
+    .blue-blink .btn,
+    .green-blink .btn {
+        position: relative;
+        z-index: 2;
+    }
+
+</style>
+
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const searchBox = document.getElementById("searchBox");
+
+        if (!searchBox) {
+            return;
+        }
+
+
+        const rows =
+            document.querySelectorAll("table tbody tr");
+
+
+
+        searchBox.addEventListener("input", function () {
+
+
+            let value =
+                this.value
+                .toLowerCase()
+                .trim();
+
+
+
+            rows.forEach(function (row) {
+
+
+                let name =
+                    row.cells[1]
+                    .innerText
+                    .toLowerCase();
+
+
+
+                let phone =
+                    row.cells[5]
+                    .innerText
+                    .toLowerCase();
+
+
+
+                if (
+                    name.includes(value) ||
+                    phone.includes(value)
+                ) {
+
+                    row.style.display = "";
+
+                }
+                else {
+
+                    row.style.display = "none";
+
+                }
+
+
+            });
+
+
+        });
+
+
+
+        // منع انتقال المؤشر عند الضغط على المسافة
+        searchBox.addEventListener("keydown", function(e){
+
+            if(e.key === " ")
+            {
+                e.stopPropagation();
+            }
+
+        });
+
+
+    });
+
+
+</script>

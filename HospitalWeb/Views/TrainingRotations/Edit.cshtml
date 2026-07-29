@@ -1,0 +1,349 @@
+﻿@model HospitalWeb.Models.TrainingRotation
+
+@{
+    ViewData["Title"] = "تعديل التدريب";
+}
+
+
+<h1>تعديل التدريب</h1>
+
+<hr />
+
+
+<div class="row">
+
+    <div class="col-md-6">
+
+
+        <form asp-action="Edit">
+
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger">
+            </div>
+
+
+
+            <input type="hidden" asp-for="Id" />
+
+
+
+            <!-- الطبيب -->
+            <div class="form-group mb-3">
+
+                <label>
+                    الطبيب
+                </label>
+
+                <select asp-for="DoctorId"
+                        class="form-control"
+                        asp-items="ViewBag.DoctorId">
+                </select>
+
+                <span asp-validation-for="DoctorId"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+
+
+            <!-- القسم -->
+            <div class="form-group mb-3">
+
+                <label>
+                    القسم
+                </label>
+
+
+                <select asp-for="DepartmentId"
+                        class="form-control"
+                        asp-items="ViewBag.DepartmentId"
+                        id="DepartmentId">
+                </select>
+
+
+                <span asp-validation-for="DepartmentId"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+
+
+
+
+            <!-- بداية التدريب -->
+            <div class="form-group mb-3">
+
+
+                <label>
+                    بداية التدريب
+                </label>
+
+
+                <input type="text"
+                       id="StartDateText"
+                       class="form-control"
+                       value="@Model.StartDate.ToString("dd/MM/yyyy")" />
+
+
+                <input type="hidden"
+                       asp-for="StartDate"
+                       id="StartDate" />
+
+
+            </div>
+
+
+
+
+
+
+
+            <!-- نهاية التدريب -->
+            <div class="form-group mb-3">
+
+
+                <label>
+                    نهاية التدريب
+                </label>
+
+
+                <input type="text"
+                       id="EndDateText"
+                       class="form-control"
+                       value="@Model.EndDate.ToString("dd/MM/yyyy")"
+                       readonly />
+
+
+                <input type="hidden"
+                       asp-for="EndDate"
+                       id="EndDate" />
+
+
+            </div>
+
+
+
+
+
+
+            <div class="mt-3">
+
+
+                <input type="submit"
+                       value="حفظ"
+                       class="btn btn-primary" />
+
+
+                <a asp-action="Index"
+                   class="btn btn-secondary">
+                    رجوع
+                </a>
+
+
+            </div>
+
+
+        </form>
+
+
+    </div>
+
+</div>
+
+
+
+
+
+@section Scripts {
+
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+
+
+    <script>
+
+
+        function convertToDate(value)
+        {
+
+            let parts = value.split("/");
+
+
+            if(parts.length !== 3)
+                return null;
+
+
+            return new Date(
+                parts[2],
+                parts[1]-1,
+                parts[0]
+            );
+
+        }
+
+
+
+
+
+        function formatDate(date)
+        {
+
+            let day =
+                String(date.getDate())
+                .padStart(2,'0');
+
+
+            let month =
+                String(date.getMonth()+1)
+                .padStart(2,'0');
+
+
+            let year =
+                date.getFullYear();
+
+
+            return day + "/" + month + "/" + year;
+
+        }
+
+
+
+
+
+
+        function calculateEndDate()
+        {
+
+            let department =
+                document.getElementById("DepartmentId");
+
+
+            let startText =
+                document.getElementById("StartDateText").value;
+
+
+
+            let startDate =
+                convertToDate(startText);
+
+
+
+            if(!startDate || department.value=="")
+                return;
+
+
+
+
+
+            let name =
+                department.options[
+                    department.selectedIndex
+                ].text;
+
+
+
+            let months = 1;
+
+
+
+            switch(name)
+            {
+
+                case "الجراحة":
+                case "الباطني":
+
+                    months = 3;
+                    break;
+
+
+                case "النسائية":
+                case "الأطفال":
+
+                    months = 2;
+                    break;
+
+
+                case "الطوارئ":
+                case "الاختياري":
+
+                    months = 1;
+                    break;
+
+            }
+
+
+
+
+
+
+            let endDate =
+                new Date(startDate);
+
+
+
+            endDate.setMonth(
+                endDate.getMonth()+months
+            );
+
+
+
+            endDate.setDate(
+                endDate.getDate()-1
+            );
+
+
+
+
+
+            document.getElementById("EndDateText").value =
+                formatDate(endDate);
+
+
+
+            document.getElementById("StartDate").value =
+                startDate.toISOString();
+
+
+
+            document.getElementById("EndDate").value =
+                endDate.toISOString();
+
+
+        }
+
+
+
+
+
+
+        document
+        .getElementById("DepartmentId")
+        .addEventListener(
+            "change",
+            calculateEndDate
+        );
+
+
+
+
+        document
+        .getElementById("StartDateText")
+        .addEventListener(
+            "change",
+            calculateEndDate
+        );
+
+
+
+    </script>
+
+
+}

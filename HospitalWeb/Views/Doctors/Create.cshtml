@@ -1,0 +1,148 @@
+﻿@model HospitalWeb.Models.Doctor
+
+@{
+    ViewData["Title"] = "إضافة طبيب";
+}
+
+<h1>إضافة طبيب</h1>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+
+        <form asp-action="Create" enctype="multipart/form-data">
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+
+            <div class="form-group mb-3">
+                <label asp-for="الاسم" class="control-label">الاسم</label>
+                <input asp-for="الاسم" class="form-control" />
+                <span asp-validation-for="الاسم" class="text-danger"></span>
+            </div>
+
+
+            <div class="form-group mb-3">
+                <label asp-for="Phone" class="control-label">رقم الهاتف</label>
+                <input asp-for="Phone" class="form-control" />
+            </div>
+
+
+            <div class="form-group mb-3">
+                <label class="control-label">صورة الطبيب</label>
+                <input type="file"
+                       name="imageFile"
+                       class="form-control"
+                       accept="image/*" />
+            </div>
+
+
+            <div class="form-group mb-3">
+                <label asp-for="الرقم_الوطني">الرقم الوطني</label>
+                <input asp-for="الرقم_الوطني" class="form-control" />
+            </div>
+
+
+            <div class="form-group mb-3">
+                <label asp-for="رقم_الطبيب">رقم الطبيب</label>
+                <input asp-for="رقم_الطبيب" class="form-control" />
+            </div>
+
+
+            <div class="form-group mb-3">
+                <label asp-for="الجامعة">الجامعة</label>
+                <input asp-for="الجامعة" class="form-control" />
+            </div>
+
+
+            <div class="form-group mb-3">
+                <label asp-for="سنة_التخرج">سنة التخرج</label>
+                <input asp-for="سنة_التخرج" class="form-control" />
+            </div>
+
+
+            <div class="form-group mb-3">
+                <label asp-for="تاريخ_الميلاد">تاريخ الميلاد</label>
+                <input asp-for="تاريخ_الميلاد"
+                       type="date"
+                       class="form-control" />
+            </div>
+
+
+            <div class="form-group mb-3">
+                <label asp-for="الجنس">الجنس</label>
+
+                <select asp-for="الجنس" class="form-control">
+                    <option value="">اختر</option>
+                    <option value="ذكر">ذكر</option>
+                    <option value="أنثى">أنثى</option>
+                </select>
+            </div>
+
+
+
+            <!-- مكان المباشرة -->
+            <div class="form-group mb-3">
+
+                <label asp-for="مكان_المباشرة">
+                    مكان المباشرة
+                </label>
+
+                <input asp-for="مكان_المباشرة"
+                       class="form-control" />
+
+                <span asp-validation-for="مكان_المباشرة"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+
+            <!-- تاريخ المباشرة -->
+            <div class="form-group mb-3">
+
+                <label asp-for="تاريخ_المباشرة">
+                    تاريخ المباشرة
+                </label>
+
+                <input asp-for="تاريخ_المباشرة"
+                       type="date"
+                       class="form-control" />
+
+                <span asp-validation-for="تاريخ_المباشرة"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+
+
+            <div class="form-group mt-3">
+
+                <input type="submit"
+                       value="حفظ"
+                       class="btn btn-primary" />
+
+
+                <a asp-action="Index"
+                   class="btn btn-secondary">
+                    رجوع
+                </a>
+
+            </div>
+
+
+        </form>
+
+    </div>
+</div>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
