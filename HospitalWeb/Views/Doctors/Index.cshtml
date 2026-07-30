@@ -11,71 +11,76 @@
 }
 
 
-<h1 class="mb-4">
+<div class="container-fluid" dir="rtl">
+
+
+<h1 class="text-center mb-4">
     قائمة الأطباء
 </h1>
 
 
-<h5 class="text-primary">
+<h5 class="text-primary text-center">
     عدد الأطباء:
-    <span id="resultCount">@doctors.Count()</span>
+    <span id="resultCount">
+        @doctors.Count()
+    </span>
 </h5>
 
 
 
 @if (warningDays.Any())
 {
-    <div class="alert alert-danger">
+    <div class="alert alert-danger text-center">
         يوجد @warningDays.Count طبيب قريب من انتهاء الروتيشن
     </div>
 }
 
 
 
+
+
+<!-- البحث -->
+
 <div class="row mb-3">
 
-
-    <div class="col-md-6">
-
+    <div class="col-12 col-md-6 mb-2">
 
         <div class="input-group">
-
 
             <input type="text"
                    id="doctorSearch"
                    class="form-control"
-                   placeholder="اكتب بداية اسم الطبيب..." />
+                   placeholder="🔍 ابحث باسم الطبيب أو الرقم..." />
 
 
             <button id="clearSearch"
-                    class="btn btn-secondary"
-                    type="button">
+                    type="button"
+                    class="btn btn-secondary">
                 مسح
             </button>
 
 
         </div>
 
-
     </div>
 
 
 
 
-    <div class="col-md-6 text-end">
+    <div class="col-12 col-md-6 text-center text-md-end">
 
 
         <a asp-action="Create"
-           class="btn btn-success">
-            + إضافة طبيب جديد
+           class="btn btn-success mb-2">
+            + إضافة طبيب
         </a>
 
 
 
         <a asp-controller="Import"
            asp-action="Access"
-           class="btn btn-dark">
-            📥 استيراد بيانات Access
+           class="btn btn-dark mb-2">
+            📥 استيراد Access
         </a>
 
 
@@ -88,31 +93,188 @@
 
 
 
+<!-- ===========================
+     نسخة الكمبيوتر
+=========================== -->
+
+
+<div class="table-responsive desktop-view">
+
+
 <table class="table table-bordered table-striped text-center align-middle">
 
 
-    <thead class="table-dark">
 
-        <tr>
+<thead class="table-dark">
 
-            <th>الصورة</th>
-            <th>الاسم</th>
-            <th>رقم الطبيب</th>
-            <th>الجامعة</th>
-            <th>سنة التخرج</th>
-            <th>الهاتف</th>
-            <th>التنبيه</th>
-            <th>التدريبات</th>
-            <th>الإجراءات</th>
+<tr>
 
-        </tr>
+<th>الصورة</th>
+<th>الاسم</th>
+<th>رقم الطبيب</th>
+<th>الجامعة</th>
+<th>سنة التخرج</th>
+<th>الهاتف</th>
+<th>التنبيه</th>
+<th>التدريبات</th>
+<th>الإجراءات</th>
 
-    </thead>
+</tr>
+
+</thead>
 
 
 
-    <tbody>
+<tbody>
 
+
+@foreach (var item in doctors)
+{
+
+    warningDays.TryGetValue(item.Id, out int days);
+
+
+
+    <tr class="doctor-item"
+        data-name="@item.الاسم.ToLower()"
+        data-phone="@item.Phone"
+        data-number="@item.رقم_الطبيب">
+
+
+
+        <td>
+
+        @if (!string.IsNullOrEmpty(item.ImagePath))
+        {
+            <img src="@item.ImagePath"
+                 class="doctor-img" />
+        }
+        else
+        {
+            <span class="text-muted">
+                لا توجد صورة
+            </span>
+        }
+
+        </td>
+
+
+
+        <td>
+            @item.الاسم
+        </td>
+
+
+
+        <td>
+            @item.رقم_الطبيب
+        </td>
+
+
+
+        <td>
+            @item.الجامعة
+        </td>
+
+
+
+        <td>
+            @item.سنة_التخرج
+        </td>
+
+
+
+        <td>
+            @item.Phone
+        </td>
+                        <td>
+
+                            @if (days > 0)
+                            {
+                                <span class="badge bg-danger">
+                                    باقي @days يوم
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">
+                                    طبيعي
+                                </span>
+                            }
+
+                        </td>
+
+
+
+                        <td>
+
+                            @if (item.TrainingRotations != null &&
+                                                    item.TrainingRotations.Any())
+                            {
+                                <span class="badge bg-primary">
+                                    @item.TrainingRotations.Count تدريب
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">
+                                    لا يوجد
+                                </span>
+                            }
+
+                        </td>
+
+
+
+                        <td>
+
+                            <a asp-action="Details"
+                               asp-route-id="@item.Id"
+                               class="btn btn-info btn-sm">
+                                ملف
+                            </a>
+
+
+                            <a asp-action="Edit"
+                               asp-route-id="@item.Id"
+                               class="btn btn-warning btn-sm">
+                                تعديل
+                            </a>
+
+
+                            <a asp-action="Delete"
+                               asp-route-id="@item.Id"
+                               class="btn btn-danger btn-sm">
+                                حذف
+                            </a>
+
+                        </td>
+
+
+
+                    </tr>
+
+                }
+
+
+            </tbody>
+
+
+        </table>
+
+
+    </div>
+
+
+
+
+
+    <!-- ===========================
+         نسخة الهاتف (بطاقات)
+    =========================== -->
+
+
+    <div class="mobile-view">
 
 
         @foreach (var item in doctors)
@@ -121,126 +283,79 @@
             warningDays.TryGetValue(item.Id, out int days);
 
 
-            string rowClass = days switch
-            {
-                1 => "danger-blink",
-                2 => "orange-blink",
-                3 => "yellow-blink",
-                4 => "blue-blink",
-                5 => "green-blink",
-                _ => ""
-            };
+            <div class="doctor-card doctor-item"
+                 data-name="@item.الاسم.ToLower()"
+                 data-phone="@item.Phone"
+                 data-number="@item.رقم_الطبيب">
 
 
 
-            <tr class="@rowClass doctor-row"
-                data-name="@item.الاسم.ToLower()"
-                data-phone="@item.Phone"
-                data-number="@item.رقم_الطبيب">
-
-
-                <td>
-
-
-                    @if (!string.IsNullOrEmpty(item.ImagePath))
-                    {
-                        <img src="@item.ImagePath"
-                             width="70"
-                             height="70"
-                             style="object-fit:cover;border-radius:5px" />
-                    }
-                    else
-                    {
-                        <span class="text-muted">
-                            لا توجد صورة
-                        </span>
-                    }
-
-
-                </td>
+                @if (!string.IsNullOrEmpty(item.ImagePath))
+                {
+                    <img src="@item.ImagePath"
+                         class="doctor-card-img" />
+                }
+                else
+                {
+                    <div class="no-image">
+                        لا توجد صورة
+                    </div>
+                }
 
 
 
-
-                <td>
+                <h4>
                     @item.الاسم
-                </td>
+                </h4>
 
 
 
-                <td>
+                <p>
+                    <b>رقم الطبيب:</b>
                     @item.رقم_الطبيب
-                </td>
+                </p>
 
 
-
-                <td>
-                    @item.الجامعة
-                </td>
-
-
-
-                <td>
-                    @item.سنة_التخرج
-                </td>
-
-
-
-                <td>
+                <p>
+                    <b>الهاتف:</b>
                     @item.Phone
-                </td>
+                </p>
+
+
+                <p>
+                    <b>الجامعة:</b>
+                    @item.الجامعة
+                </p>
+
+
+                <p>
+                    <b>سنة التخرج:</b>
+                    @item.سنة_التخرج
+                </p>
 
 
 
-
-                <td>
-
-                    @if (days > 0)
-                    {
-                        <span class="badge bg-danger">
-                            باقي @days يوم
-                        </span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-success">
-                            طبيعي
-                        </span>
-                    }
-
-                </td>
+                @if (days > 0)
+                {
+                    <span class="badge bg-danger">
+                        باقي @days يوم
+                    </span>
+                }
+                else
+                {
+                    <span class="badge bg-success">
+                        طبيعي
+                    </span>
+                }
 
 
 
-
-                <td>
-
-                    @if (item.TrainingRotations != null &&
-                                    item.TrainingRotations.Any())
-                    {
-                        <span class="badge bg-primary">
-                            @item.TrainingRotations.Count تدريب
-                        </span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">
-                            لا يوجد
-                        </span>
-                    }
-
-                </td>
-
-
-
-
-                <td>
-
+                <div class="mt-3">
 
                     <a asp-action="Details"
                        asp-route-id="@item.Id"
                        class="btn btn-info btn-sm">
-                        ملف الطبيب
+                        ملف
                     </a>
 
 
@@ -257,254 +372,388 @@
                         حذف
                     </a>
 
-
-                </td>
-
+                </div>
 
 
-            </tr>
+            </div>
 
 
         }
 
 
-
-    </tbody>
-
-
-</table>
+    </div>
+    <style>
 
 
-
-
-
-
-
-<style>
-
-
-    .table > tbody > tr.danger-blink > *,
-    .table > tbody > tr.orange-blink > *,
-    .table > tbody > tr.yellow-blink > *,
-    .table > tbody > tr.blue-blink > *,
-    .table > tbody > tr.green-blink > * {
-        background-color: transparent !important;
-    }
-
-
-
-    tr.danger-blink {
-        animation: redBlink 1s infinite;
-        font-weight: bold;
-    }
-
-
-
-    tr.orange-blink {
-        animation: orangeBlink 1s infinite;
-        font-weight: bold;
-    }
-
-
-
-    tr.yellow-blink {
-        animation: yellowBlink 1s infinite;
-        font-weight: bold;
-    }
-
-
-
-    tr.blue-blink {
-        animation: blueBlink 1s infinite;
-        font-weight: bold;
-    }
-
-
-
-    tr.green-blink {
-        animation: greenBlink 1s infinite;
-        font-weight: bold;
-    }
-
-
-
-
-
-    @@keyframes redBlink {
-        0%, 100% {
-            background: red;
-            color: white;
+        body {
+            overflow-x: hidden;
         }
 
-        50% {
+
+        /* صور الجدول */
+
+        .doctor-img {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+
+
+
+        /* بطاقات الهاتف */
+
+        .mobile-view {
+            display: none;
+        }
+
+
+
+        .doctor-card {
             background: white;
-            color: black;
-        }
-    }
-
-
-
-
-    @@keyframes orangeBlink {
-        0%, 100% {
-            background: #ff9900;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px #ccc;
+            text-align: center;
         }
 
-        50% {
-            background: white;
-        }
-    }
 
 
-
-
-    @@keyframes yellowBlink {
-        0%, 100% {
-            background: #ffff66;
+        .doctor-card-img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin: auto;
+            display: block;
         }
 
-        50% {
-            background: white;
-        }
-    }
 
 
-
-
-    @@keyframes blueBlink {
-        0%, 100% {
-            background: #3399ff;
-            color: white;
-        }
-
-        50% {
-            background: white;
-            color: black;
-        }
-    }
-
-
-
-
-    @@keyframes greenBlink {
-        0%, 100% {
-            background: #33cc66;
-            color: white;
+        .no-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: auto;
         }
 
-        50% {
-            background: white;
-            color: black;
+
+
+        .doctor-card .btn {
+            margin: 3px;
         }
-    }
-
-</style>
 
 
 
+        /* تنبيه الروتيشن */
+
+        tr.danger-blink {
+            animation: redBlink 1s infinite;
+        }
 
 
-<script>
+        tr.orange-blink {
+            animation: orangeBlink 1s infinite;
+        }
 
 
-    const searchBox =
-        document.getElementById("doctorSearch");
+        tr.yellow-blink {
+            animation: yellowBlink 1s infinite;
+        }
 
 
-    const clearButton =
-        document.getElementById("clearSearch");
+        tr.blue-blink {
+            animation: blueBlink 1s infinite;
+        }
 
 
-    const rows =
-        document.querySelectorAll(".doctor-row");
-
-
-    const resultCount =
-        document.getElementById("resultCount");
-
-
-
-
-    searchBox.addEventListener("input", function(){
-
-
-        let value =
-            this.value.trim().toLowerCase();
+        tr.green-blink {
+            animation: greenBlink 1s infinite;
+        }
 
 
 
-        let count = 0;
 
+        @@keyframes redBlink {
 
-
-        rows.forEach(row => {
-
-
-            let name =
-                row.dataset.name || "";
-
-
-            let phone =
-                row.dataset.phone || "";
-
-
-            let number =
-                row.dataset.number || "";
-
-
-
-            if(
-                name.startsWith(value) ||
-                phone.startsWith(value) ||
-                number.startsWith(value)
-            )
-            {
-
-                row.style.display="";
-                count++;
-
-            }
-            else
-            {
-
-                row.style.display="none";
-
+            0%, 100% {
+                background: red;
+                color: white;
             }
 
+            50% {
+                background: white;
+                color: black;
+            }
+        }
+
+
+
+        @@keyframes orangeBlink {
+
+            0%, 100% {
+                background: #ff9900;
+            }
+
+            50% {
+                background: white;
+            }
+        }
+
+
+
+        @@keyframes yellowBlink {
+
+            0%, 100% {
+                background: #ffff66;
+            }
+
+            50% {
+                background: white;
+            }
+        }
+
+
+
+        @@keyframes blueBlink {
+
+            0%, 100% {
+                background: #3399ff;
+                color: white;
+            }
+
+            50% {
+                background: white;
+                color: black;
+            }
+        }
+
+
+
+        @@keyframes greenBlink {
+
+            0%, 100% {
+                background: #33cc66;
+                color: white;
+            }
+
+            50% {
+                background: white;
+                color: black;
+            }
+        }
+
+
+
+
+
+
+        /* شاشة الهاتف */
+
+        @@media(max-width:768px) {
+
+
+            .desktop-view {
+                display: none;
+            }
+
+
+
+            .mobile-view {
+                display: block;
+            }
+
+
+
+            h1 {
+                font-size: 24px;
+            }
+
+
+
+            .btn {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+
+
+
+            .input-group {
+                flex-direction: column;
+            }
+
+
+
+            #doctorSearch {
+                margin-bottom: 5px;
+            }
+        }
+
+
+
+
+
+
+        /* شاشة الكمبيوتر */
+
+
+        @@media(min-width:769px) {
+
+
+            .desktop-view {
+                display: block;
+            }
+
+
+
+            .mobile-view {
+                display: none;
+            }
+        }
+
+    </style>
+
+
+
+
+
+
+    <script>
+
+
+        // ===========================
+        // Live Search
+        // ===========================
+
+
+        const searchBox =
+            document.getElementById("doctorSearch");
+
+
+        const clearButton =
+            document.getElementById("clearSearch");
+
+
+        const doctors =
+            document.querySelectorAll(".doctor-item");
+
+
+        const resultCount =
+            document.getElementById("resultCount");
+
+
+
+
+
+        searchBox.addEventListener("input", function(){
+
+
+            let value =
+                this.value.trim().toLowerCase();
+
+
+
+            let count = 0;
+
+
+
+            doctors.forEach(item => {
+
+
+
+                let name =
+                    item.dataset.name || "";
+
+
+
+                let phone =
+                    item.dataset.phone || "";
+
+
+
+                let number =
+                    item.dataset.number || "";
+
+
+
+
+                if(
+
+                    name.startsWith(value)
+                    ||
+                    phone.startsWith(value)
+                    ||
+                    number.startsWith(value)
+
+                )
+
+                {
+
+                    item.style.display="";
+
+                    count++;
+
+                }
+
+                else
+
+                {
+
+                    item.style.display="none";
+
+                }
+
+
+
+            });
+
+
+
+            resultCount.innerText=count;
 
 
         });
 
 
 
-        resultCount.innerText=count;
-
-
-    });
 
 
 
 
-
-    clearButton.addEventListener("click",function(){
-
-
-        searchBox.value="";
+        // زر المسح
 
 
-        rows.forEach(row=>{
+        clearButton.addEventListener("click",function(){
 
-            row.style.display="";
+
+            searchBox.value="";
+
+
+            doctors.forEach(item=>{
+
+
+                item.style.display="";
+
+
+            });
+
+
+
+            resultCount.innerText =
+                doctors.length;
+
 
         });
 
 
 
-        resultCount.innerText=rows.length;
+    </script>
 
 
-    });
-
-
-
-</script>
+</div>
