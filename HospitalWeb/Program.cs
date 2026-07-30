@@ -8,7 +8,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 
-
 //  ÕœÌœ „”«— ﬁ«⁄œ… «·»Ì«‰« 
 var dbPath = Path.Combine(
     Directory.GetCurrentDirectory(),
@@ -17,12 +16,10 @@ var dbPath = Path.Combine(
 );
 
 
-
 // ≈‰‘«¡ „Ã·œ App_Data ≈–« ·„ Ìﬂ‰ „ÊÃÊœ«
 Directory.CreateDirectory(
     Path.GetDirectoryName(dbPath)!
 );
-
 
 
 // —»ÿ SQLite
@@ -32,62 +29,45 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     ));
 
 
-
 //  ”ÃÌ· „” Ê—œ Access
 builder.Services.AddScoped<AccessImporter>();
-
 
 
 var app = builder.Build();
 
 
-
-
 // ≈‰‘«¡ ﬁ«⁄œ… «·»Ì«‰«  ≈–« ·„  ﬂ‰ „ÊÃÊœ…
 using (var scope = app.Services.CreateScope())
 {
-    var db =
-        scope.ServiceProvider
+    var db = scope.ServiceProvider
         .GetRequiredService<ApplicationDbContext>();
-
 
     db.Database.EnsureCreated();
 }
-
-
-
 
 
 // „⁄«·Ã… «·√Œÿ«¡
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-
     app.UseHsts();
 }
 
 
-
 app.UseHttpsRedirection();
-
 
 app.UseStaticFiles();
 
-
 app.UseRouting();
-
 
 app.UseAuthorization();
 
 
-
-
-// «·„”«— «·«› —«÷Ì
+// «·’›Õ… «·—∆Ì”Ì…
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}"
+    pattern: "{controller=Doctors}/{action=Index}/{id?}"
 );
-
 
 
 app.Run();
