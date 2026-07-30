@@ -14,179 +14,193 @@
 <div class="container-fluid" dir="rtl">
 
 
-<h1 class="text-center mb-4">
-    قائمة الأطباء
-</h1>
+    <h1 class="text-center mb-4">
+        قائمة الأطباء
+    </h1>
 
 
-<h5 class="text-primary text-center">
-    عدد الأطباء:
-    <span id="resultCount">
-        @doctors.Count()
-    </span>
-</h5>
+    <h5 class="text-primary text-center">
+        عدد الأطباء:
+        <span id="resultCount">
+            @doctors.Count()
+        </span>
+    </h5>
 
 
 
 @if (warningDays.Any())
 {
-    <div class="alert alert-danger text-center">
-        يوجد @warningDays.Count طبيب قريب من انتهاء الروتيشن
-    </div>
+        <div class="alert alert-danger text-center">
+            يوجد @warningDays.Count طبيب قريب من انتهاء الروتيشن
+        </div>
 }
 
 
 
 
 
-<!-- البحث -->
+    <!-- البحث -->
 
-<div class="row mb-3">
+    <div class="row mb-3">
 
-    <div class="col-12 col-md-6 mb-2">
+        <div class="col-12 col-md-6 mb-2">
 
-        <div class="input-group">
+            <div class="input-group">
 
-            <input type="text"
-                   id="doctorSearch"
-                   class="form-control"
-                   placeholder="🔍 ابحث باسم الطبيب أو الرقم..." />
+                <input type="text"
+                       id="doctorSearch"
+                       class="form-control"
+                       placeholder="🔍 ابحث باسم الطبيب أو الرقم..." />
 
 
-            <button id="clearSearch"
-                    type="button"
-                    class="btn btn-secondary">
-                مسح
-            </button>
+                <button id="clearSearch"
+                        type="button"
+                        class="btn btn-secondary">
+                    مسح
+                </button>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="col-12 col-md-6 text-center text-md-end">
+
+
+            <a asp-action="Create"
+               class="btn btn-success mb-2">
+                + إضافة طبيب
+            </a>
+
+
+
+            <a asp-controller="Import"
+               asp-action="Access"
+               class="btn btn-dark mb-2">
+                📥 استيراد Access
+            </a>
 
 
         </div>
 
-    </div>
-
-
-
-
-    <div class="col-12 col-md-6 text-center text-md-end">
-
-
-        <a asp-action="Create"
-           class="btn btn-success mb-2">
-            + إضافة طبيب
-        </a>
-
-
-
-        <a asp-controller="Import"
-           asp-action="Access"
-           class="btn btn-dark mb-2">
-            📥 استيراد Access
-        </a>
-
 
     </div>
 
 
-</div>
 
 
 
 
-
-<!-- ===========================
-     نسخة الكمبيوتر
-=========================== -->
-
-
-<div class="table-responsive desktop-view">
+    <!-- ===========================
+         نسخة الكمبيوتر
+    =========================== -->
 
 
-<table class="table table-bordered table-striped text-center align-middle">
+    <div class="table-responsive desktop-view">
 
 
-
-<thead class="table-dark">
-
-<tr>
-
-<th>الصورة</th>
-<th>الاسم</th>
-<th>رقم الطبيب</th>
-<th>الجامعة</th>
-<th>سنة التخرج</th>
-<th>الهاتف</th>
-<th>التنبيه</th>
-<th>التدريبات</th>
-<th>الإجراءات</th>
-
-</tr>
-
-</thead>
+        <table class="table table-bordered text-center align-middle">
 
 
 
-<tbody>
+            <thead class="table-dark">
 
+                <tr>
 
-@foreach (var item in doctors)
-{
+                    <th>الصورة</th>
+                    <th>الاسم</th>
+                    <th>رقم الطبيب</th>
+                    <th>الجامعة</th>
+                    <th>سنة التخرج</th>
+                    <th>الهاتف</th>
+                    <th>التنبيه</th>
+                    <th>التدريبات</th>
+                    <th>الإجراءات</th>
 
-    warningDays.TryGetValue(item.Id, out int days);
+                </tr>
 
-
-
-    <tr class="doctor-item"
-        data-name="@item.الاسم.ToLower()"
-        data-phone="@item.Phone"
-        data-number="@item.رقم_الطبيب">
-
-
-
-        <td>
-
-        @if (!string.IsNullOrEmpty(item.ImagePath))
-        {
-            <img src="@item.ImagePath"
-                 class="doctor-img" />
-        }
-        else
-        {
-            <span class="text-muted">
-                لا توجد صورة
-            </span>
-        }
-
-        </td>
+            </thead>
 
 
 
-        <td>
-            @item.الاسم
-        </td>
+            <tbody>
+
+
+                @foreach (var item in doctors)
+                {
+
+                    warningDays.TryGetValue(item.Id, out int days);
+
+
+                    var alertClass = days switch
+                    {
+                        1 => "danger-blink",
+                        2 => "orange-blink",
+                        3 => "yellow-blink",
+                        4 => "blue-blink",
+                        5 => "green-blink",
+                        _ => ""
+                    };
 
 
 
-        <td>
-            @item.رقم_الطبيب
-        </td>
+                    <tr class="@alertClass doctor-item"
+                        data-name="@item.الاسم?.ToLower()"
+                        data-phone="@item.Phone"
+                        data-number="@item.رقم_الطبيب">
 
 
 
-        <td>
-            @item.الجامعة
-        </td>
+                        <td>
+
+                            @if (!string.IsNullOrEmpty(item.ImagePath))
+                            {
+                                <img src="@item.ImagePath"
+                                     class="doctor-img" />
+                            }
+                            else
+                            {
+                                <span class="text-muted">
+                                    لا توجد صورة
+                                </span>
+                            }
+
+                        </td>
 
 
 
-        <td>
-            @item.سنة_التخرج
-        </td>
+                        <td>
+                            @item.الاسم
+                        </td>
 
 
 
-        <td>
-            @item.Phone
-        </td>
+                        <td>
+                            @item.رقم_الطبيب
+                        </td>
+
+
+
+                        <td>
+                            @item.الجامعة
+                        </td>
+
+
+
+                        <td>
+                            @item.سنة_التخرج
+                        </td>
+
+
+
+                        <td>
+                            @item.Phone
+                        </td>
+
+
+
+
                         <td>
 
                             @if (days > 0)
@@ -203,6 +217,8 @@
                             }
 
                         </td>
+
+
 
 
 
@@ -226,13 +242,18 @@
 
 
 
+
+
+
                         <td>
+
 
                             <a asp-action="Details"
                                asp-route-id="@item.Id"
                                class="btn btn-info btn-sm">
                                 ملف
                             </a>
+
 
 
                             <a asp-action="Edit"
@@ -242,17 +263,20 @@
                             </a>
 
 
+
                             <a asp-action="Delete"
                                asp-route-id="@item.Id"
                                class="btn btn-danger btn-sm">
                                 حذف
                             </a>
 
+
                         </td>
 
 
 
                     </tr>
+
 
                 }
 
@@ -264,11 +288,6 @@
 
 
     </div>
-
-
-
-
-
     <!-- ===========================
          نسخة الهاتف (بطاقات)
     =========================== -->
@@ -283,8 +302,20 @@
             warningDays.TryGetValue(item.Id, out int days);
 
 
-            <div class="doctor-card doctor-item"
-                 data-name="@item.الاسم.ToLower()"
+            var alertClass = days switch
+            {
+                1 => "danger-blink",
+                2 => "orange-blink",
+                3 => "yellow-blink",
+                4 => "blue-blink",
+                5 => "green-blink",
+                _ => ""
+            };
+
+
+
+            <div class="doctor-card doctor-item @alertClass"
+                 data-name="@item.الاسم?.ToLower()"
                  data-phone="@item.Phone"
                  data-number="@item.رقم_الطبيب">
 
@@ -335,6 +366,7 @@
 
 
 
+
                 @if (days > 0)
                 {
                     <span class="badge bg-danger">
@@ -350,13 +382,16 @@
 
 
 
+
                 <div class="mt-3">
+
 
                     <a asp-action="Details"
                        asp-route-id="@item.Id"
                        class="btn btn-info btn-sm">
                         ملف
                     </a>
+
 
 
                     <a asp-action="Edit"
@@ -366,11 +401,14 @@
                     </a>
 
 
+
                     <a asp-action="Delete"
                        asp-route-id="@item.Id"
                        class="btn btn-danger btn-sm">
                         حذف
                     </a>
+
+
 
                 </div>
 
@@ -382,6 +420,11 @@
 
 
     </div>
+
+
+
+
+
     <style>
 
 
@@ -390,7 +433,9 @@
         }
 
 
-        /* صور الجدول */
+
+
+        /* صورة الجدول */
 
         .doctor-img {
             width: 70px;
@@ -398,6 +443,7 @@
             object-fit: cover;
             border-radius: 10px;
         }
+
 
 
 
@@ -426,8 +472,8 @@
             height: 120px;
             object-fit: cover;
             border-radius: 50%;
-            margin: auto;
             display: block;
+            margin: auto;
         }
 
 
@@ -438,8 +484,8 @@
             border-radius: 50%;
             background: #ddd;
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             margin: auto;
         }
 
@@ -451,100 +497,157 @@
 
 
 
-        /* تنبيه الروتيشن */
 
-        tr.danger-blink {
+
+        /* =====================
+           وميض التنبيه
+        ===================== */
+
+
+        tr.danger-blink td {
             animation: redBlink 1s infinite;
         }
 
 
-        tr.orange-blink {
+        tr.orange-blink td {
             animation: orangeBlink 1s infinite;
         }
 
 
-        tr.yellow-blink {
+        tr.yellow-blink td {
             animation: yellowBlink 1s infinite;
         }
 
 
-        tr.blue-blink {
+        tr.blue-blink td {
             animation: blueBlink 1s infinite;
         }
 
 
-        tr.green-blink {
+        tr.green-blink td {
             animation: greenBlink 1s infinite;
         }
 
 
 
 
+
+
+        /* الهاتف */
+
+        .doctor-card.danger-blink {
+            animation: redBlink 1s infinite;
+        }
+
+
+        .doctor-card.orange-blink {
+            animation: orangeBlink 1s infinite;
+        }
+
+
+        .doctor-card.yellow-blink {
+            animation: yellowBlink 1s infinite;
+        }
+
+
+        .doctor-card.blue-blink {
+            animation: blueBlink 1s infinite;
+        }
+
+
+        .doctor-card.green-blink {
+            animation: greenBlink 1s infinite;
+        }
+
+
+
+
+
+
+
         @@keyframes redBlink {
 
+
             0%, 100% {
-                background: red;
+                background-color: red;
                 color: white;
             }
 
+
             50% {
-                background: white;
+                background-color: white;
                 color: black;
             }
         }
+
+
 
 
 
         @@keyframes orangeBlink {
 
+
             0%, 100% {
-                background: #ff9900;
+                background-color: #ff9900;
             }
 
+
             50% {
-                background: white;
+                background-color: white;
             }
         }
+
+
 
 
 
         @@keyframes yellowBlink {
 
+
             0%, 100% {
-                background: #ffff66;
+                background-color: #ffff66;
             }
 
+
             50% {
-                background: white;
+                background-color: white;
             }
         }
 
 
 
+
+
         @@keyframes blueBlink {
 
+
             0%, 100% {
-                background: #3399ff;
+                background-color: #3399ff;
                 color: white;
             }
 
+
             50% {
-                background: white;
+                background-color: white;
                 color: black;
             }
         }
 
 
 
+
+
         @@keyframes greenBlink {
 
+
             0%, 100% {
-                background: #33cc66;
+                background-color: #33cc66;
                 color: white;
             }
 
+
             50% {
-                background: white;
+                background-color: white;
                 color: black;
             }
         }
@@ -555,6 +658,7 @@
 
 
         /* شاشة الهاتف */
+
 
         @@media(max-width:768px) {
 
@@ -600,6 +704,7 @@
 
 
 
+
         /* شاشة الكمبيوتر */
 
 
@@ -618,17 +723,11 @@
         }
 
     </style>
-
-
-
-
-
-
     <script>
 
 
         // ===========================
-        // Live Search
+        // البحث المباشر
         // ===========================
 
 
@@ -640,7 +739,7 @@
             document.getElementById("clearSearch");
 
 
-        const doctors =
+        const doctorItems =
             document.querySelectorAll(".doctor-item");
 
 
@@ -651,63 +750,77 @@
 
 
 
-        searchBox.addEventListener("input", function(){
+        // التأكد أن العناصر موجودة
+
+        if(searchBox && clearButton)
+        {
 
 
-            let value =
-                this.value.trim().toLowerCase();
+            // البحث
+
+            searchBox.addEventListener("input", function(){
 
 
-
-            let count = 0;
-
-
-
-            doctors.forEach(item => {
-
-
-
-                let name =
-                    item.dataset.name || "";
+                let value =
+                    this.value.trim().toLowerCase();
 
 
 
-                let phone =
-                    item.dataset.phone || "";
+                let count = 0;
 
 
 
-                let number =
-                    item.dataset.number || "";
+                doctorItems.forEach(item => {
+
+
+
+                    let name =
+                        item.dataset.name || "";
+
+
+
+                    let phone =
+                        item.dataset.phone || "";
+
+
+
+                    let number =
+                        item.dataset.number || "";
 
 
 
 
-                if(
 
-                    name.startsWith(value)
-                    ||
-                    phone.startsWith(value)
-                    ||
-                    number.startsWith(value)
+                    if(
 
-                )
+                        name.includes(value)
+                        ||
+                        phone.includes(value)
+                        ||
+                        number.includes(value)
 
-                {
+                    )
+                    {
 
-                    item.style.display="";
+                        item.style.display = "";
 
-                    count++;
+                        count++;
 
-                }
+                    }
+                    else
+                    {
 
-                else
+                        item.style.display = "none";
 
-                {
+                    }
 
-                    item.style.display="none";
 
-                }
+
+                });
+
+
+
+                resultCount.innerText = count;
 
 
 
@@ -715,41 +828,38 @@
 
 
 
-            resultCount.innerText=count;
-
-
-        });
 
 
 
+            // زر المسح
+
+
+            clearButton.addEventListener("click", function(){
+
+
+                searchBox.value = "";
 
 
 
-
-        // زر المسح
-
-
-        clearButton.addEventListener("click",function(){
+                doctorItems.forEach(item => {
 
 
-            searchBox.value="";
+                    item.style.display = "";
 
 
-            doctors.forEach(item=>{
+                });
 
 
-                item.style.display="";
+
+                resultCount.innerText =
+                    doctorItems.length;
+
 
 
             });
 
 
-
-            resultCount.innerText =
-                doctors.length;
-
-
-        });
+        }
 
 
 
