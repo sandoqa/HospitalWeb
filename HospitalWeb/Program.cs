@@ -4,16 +4,33 @@ using HospitalWeb.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 
-// ===============================
+// ==================================================
+//  ⁄ÿÌ· „—«ﬁ»… «·„·›«  ›Ì Render
+// ·„‰⁄ „‘ﬂ·… inotify limit
+// ==================================================
+
+builder.Configuration["DOTNET_USE_POLLING_FILE_WATCHER"] = "false";
+
+
+
+// ==================================================
 // MVC
-// ===============================
+// ==================================================
+
 builder.Services.AddControllersWithViews();
 
 
+builder.Services.Configure<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions>(options =>
+{
+    options.AllowRecompilingViewsOnFileChange = false;
+});
 
-// ===============================
+
+
+
+// ==================================================
 // «·»ÕÀ ⁄‰ ﬁ«⁄œ… «·»Ì«‰« 
-// ===============================
+// ==================================================
 
 string[] databasePaths =
 {
@@ -30,6 +47,7 @@ string[] databasePaths =
 };
 
 
+
 string dbPath =
     databasePaths.FirstOrDefault(File.Exists)
     ??
@@ -41,6 +59,7 @@ string? dbFolder =
     Path.GetDirectoryName(dbPath);
 
 
+
 if (!string.IsNullOrEmpty(dbFolder))
 {
     Directory.CreateDirectory(dbFolder);
@@ -49,27 +68,41 @@ if (!string.IsNullOrEmpty(dbFolder))
 
 
 
-// ===============================
+// ==================================================
 // „⁄·Ê„«  ﬁ«⁄œ… «·»Ì«‰« 
-// ===============================
+// ==================================================
 
 Console.WriteLine("====================================");
-Console.WriteLine("Environment  = "
-    + builder.Environment.EnvironmentName);
 
-Console.WriteLine("Content Root = "
-    + Directory.GetCurrentDirectory());
+Console.WriteLine(
+    "Environment  = "
+    + builder.Environment.EnvironmentName
+);
 
-Console.WriteLine("DB Path      = "
-    + dbPath);
 
-Console.WriteLine("DB Exists    = "
-    + File.Exists(dbPath));
+Console.WriteLine(
+    "Content Root = "
+    + Directory.GetCurrentDirectory()
+);
+
+
+Console.WriteLine(
+    "DB Path      = "
+    + dbPath
+);
+
+
+Console.WriteLine(
+    "DB Exists    = "
+    + File.Exists(dbPath)
+);
+
 
 
 if (File.Exists(dbPath))
 {
-    var info = new FileInfo(dbPath);
+    FileInfo info = new FileInfo(dbPath);
+
 
     Console.WriteLine(
         "DB Size      = "
@@ -78,14 +111,16 @@ if (File.Exists(dbPath))
     );
 }
 
+
 Console.WriteLine("====================================");
 
 
 
 
-// ===============================
+
+// ==================================================
 // SQLite
-// ===============================
+// ==================================================
 
 builder.Services.AddDbContext<ApplicationDbContext>(
     options =>
@@ -98,11 +133,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(
 
 
 
-// ===============================
+// ==================================================
 // Access Importer
-// ===============================
+// ==================================================
 
 builder.Services.AddScoped<AccessImporter>();
+
 
 
 
@@ -112,14 +148,16 @@ var app = builder.Build();
 
 
 
-// ===============================
-// «Œ »«— «·« ’«·
-// ===============================
+
+// ==================================================
+// «Œ »«— ﬁ«⁄œ… «·»Ì«‰« 
+// ==================================================
 
 using (var scope = app.Services.CreateScope())
 {
     try
     {
+
         var db =
             scope.ServiceProvider
             .GetRequiredService<ApplicationDbContext>();
@@ -129,40 +167,42 @@ using (var scope = app.Services.CreateScope())
             db.Database.CanConnect();
 
 
+
         Console.WriteLine(
             "Database Connected = "
             + connected
         );
 
 
+
         if (connected)
         {
+
             int doctors =
                 db.Doctors.Count();
+
 
 
             Console.WriteLine(
                 "Doctors Count = "
                 + doctors
             );
-        }
-        else
-        {
-            Console.WriteLine(
-                "Database connection failed"
-            );
+
         }
 
     }
     catch (Exception ex)
     {
+
         Console.WriteLine(
             "DATABASE ERROR"
         );
 
+
         Console.WriteLine(
             ex.ToString()
         );
+
     }
 }
 
@@ -171,9 +211,9 @@ using (var scope = app.Services.CreateScope())
 
 
 
-// ===============================
+// ==================================================
 // Error Handling
-// ===============================
+// ==================================================
 
 if (!app.Environment.IsDevelopment())
 {
@@ -184,30 +224,43 @@ if (!app.Environment.IsDevelopment())
 
 
 
-// ===============================
-// Middleware
-// ===============================
 
-app.UseHttpsRedirection();
+// ==================================================
+// Middleware
+// ==================================================
+
+// Render Ì ⁄«„· „⁄ HTTPS Œ«—ÃÌ«
+// ·–·ﬂ ·« ‰” Œœ„ Redirect ›Ì Production
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
+
 
 app.UseStaticFiles();
 
+
 app.UseRouting();
+
 
 app.UseAuthorization();
 
 
 
 
-// ===============================
+
+// ==================================================
 // Default Route
-// ===============================
+// ==================================================
 
 app.MapControllerRoute(
     name: "default",
     pattern:
     "{controller=Doctors}/{action=Index}/{id?}"
 );
+
 
 
 
