@@ -129,15 +129,15 @@
     warningDays.TryGetValue(item.Id, out int days);
 
 
-    var alertClass = days switch
-    {
-        1 => "danger-blink",
-        2 => "orange-blink",
-        3 => "yellow-blink",
-        4 => "blue-blink",
-        5 => "green-blink",
-        _ => ""
-    };
+                    var alertClass = days switch
+                    {
+                        1 => "danger-blink",
+                        2 => "orange-blink",
+                        3 => "yellow-blink",
+                        4 => "blue-blink",
+                        5 => "green-blink",
+                        _ => ""
+                    };
 
 
     <tr class="@alertClass doctor-item"
@@ -298,27 +298,27 @@
         ====================== */
 
 
-        tr.danger-blink {
+        tr.danger-blink td {
             animation: redBlink 1s infinite;
         }
 
 
-        tr.orange-blink {
+        tr.orange-blink td {
             animation: orangeBlink 1s infinite;
         }
 
 
-        tr.yellow-blink {
+        tr.yellow-blink td {
             animation: yellowBlink 1s infinite;
         }
 
 
-        tr.blue-blink {
+        tr.blue-blink td {
             animation: blueBlink 1s infinite;
         }
 
 
-        tr.green-blink {
+        tr.green-blink td {
             animation: greenBlink 1s infinite;
         }
 
