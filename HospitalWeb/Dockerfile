@@ -16,6 +16,10 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 
+# نسخ قاعدة البيانات SQLite
+COPY HospitalWeb/App_Data/hospital.db /app/App_Data/hospital.db
+
+
 EXPOSE 8080
 
 
