@@ -21,7 +21,6 @@ namespace HospitalWeb.Controllers
 
 
 
-
         // =========================
         // قائمة الأطباء + البحث + التنبيه
         // =========================
@@ -35,7 +34,7 @@ namespace HospitalWeb.Controllers
 
 
 
-            // البحث بالاسم أو رقم الهاتف فقط
+            // البحث بالاسم أو رقم الهاتف
             if (!string.IsNullOrWhiteSpace(search))
             {
                 search = search.Trim();
@@ -56,8 +55,8 @@ namespace HospitalWeb.Controllers
 
 
             var result = await doctors
-    .OrderBy(x => x.الاسم)
-    .ToListAsync();
+                .OrderBy(x => x.الاسم)
+                .ToListAsync();
 
 
 
@@ -78,7 +77,9 @@ namespace HospitalWeb.Controllers
 
             }
 
-            // ترتيب الأطباء حسب قرب انتهاء الروتيشن
+
+
+            // ترتيب حسب قرب انتهاء التدريب
             result = result
                 .OrderBy(x =>
                     warningDays.ContainsKey(x.Id)
@@ -94,20 +95,10 @@ namespace HospitalWeb.Controllers
             ViewBag.Search = search;
 
 
-            return View(result);
-
-            ViewBag.WarningDays = warningDays;
-
-            ViewBag.Search = search;
-
-
 
             return View(result);
 
         }
-
-
-
 
 
 
@@ -129,13 +120,10 @@ namespace HospitalWeb.Controllers
 
             var currentRotation =
                 doctor.TrainingRotations
-
                 .Where(x =>
                     x.StartDate.Date <= DateTime.Today &&
                     x.EndDate.Date >= DateTime.Today)
-
                 .OrderBy(x => x.EndDate)
-
                 .FirstOrDefault();
 
 
@@ -163,7 +151,8 @@ namespace HospitalWeb.Controllers
 
 
 
-            if (remainingDays <= 5)
+            if (remainingDays >= 1 &&
+                remainingDays <= 5)
             {
                 return remainingDays;
             }
@@ -173,9 +162,6 @@ namespace HospitalWeb.Controllers
             return -1;
 
         }
-
-
-
 
 
 
@@ -194,11 +180,8 @@ namespace HospitalWeb.Controllers
 
             var doctor =
                 await _context.Doctors
-
                 .Include(x => x.TrainingRotations)
-
                 .ThenInclude(x => x.Department)
-
                 .FirstOrDefaultAsync(x => x.Id == id);
 
 
@@ -216,9 +199,6 @@ namespace HospitalWeb.Controllers
 
 
 
-
-
-
         // =========================
         // إضافة طبيب
         // =========================
@@ -226,7 +206,6 @@ namespace HospitalWeb.Controllers
         {
             return View();
         }
-
 
 
 
@@ -257,18 +236,10 @@ namespace HospitalWeb.Controllers
             }
 
 
+
             return View(doctor);
 
-        }
-
-
-
-
-
-
-
-
-        // =========================
+        }        // =========================
         // تعديل
         // =========================
         public async Task<IActionResult> Edit(int? id)
@@ -292,8 +263,6 @@ namespace HospitalWeb.Controllers
             return View(doctor);
 
         }
-
-
 
 
 
@@ -364,9 +333,6 @@ namespace HospitalWeb.Controllers
 
 
 
-
-
-
         // =========================
         // حذف
         // =========================
@@ -392,8 +358,6 @@ namespace HospitalWeb.Controllers
             return View(doctor);
 
         }
-
-
 
 
 
@@ -435,12 +399,8 @@ namespace HospitalWeb.Controllers
 
 
 
-
-
-
-
         // =========================
-        // حفظ الصورة
+        // حفظ صورة الطبيب
         // =========================
         private async Task<string> SaveImage(IFormFile imageFile)
         {
@@ -491,9 +451,6 @@ namespace HospitalWeb.Controllers
 
 
 
-
-
-
         private void DeleteImage(string imagePath)
         {
 
@@ -516,19 +473,22 @@ namespace HospitalWeb.Controllers
 
 
 
-
-
-
+        // =========================
         // إضافة تدريب جديد للطبيب
+        // =========================
         public async Task<IActionResult> AddTraining(int id)
         {
-            var doctor = await _context.Doctors
+
+            var doctor =
+                await _context.Doctors
                 .Include(x => x.TrainingRotations)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
 
+
             if (doctor == null)
                 return NotFound();
+
 
 
             var completedDepartments =
@@ -537,8 +497,10 @@ namespace HospitalWeb.Controllers
                 .ToList();
 
 
+
             TempData["CompletedDepartments"] =
                 string.Join(",", completedDepartments);
+
 
 
             return RedirectToAction(
@@ -548,6 +510,7 @@ namespace HospitalWeb.Controllers
                 {
                     doctorId = id
                 });
+
         }
 
     }
