@@ -12,42 +12,69 @@ builder.Services.AddControllersWithViews();
 
 
 // ===============================
-//  ÕœÌœ ﬁ«⁄œ… «·»Ì«‰« 
+// «·»ÕÀ ⁄‰ ﬁ«⁄œ… «·»Ì«‰« 
 // ===============================
 
-var appDataPath = Path.Combine(
-    Directory.GetCurrentDirectory(),
-    "App_Data"
-);
+string[] databasePaths =
+{
+    Path.Combine(
+        Directory.GetCurrentDirectory(),
+        "App_Data",
+        "hospital.db"
+    ),
+
+    Path.Combine(
+        Directory.GetCurrentDirectory(),
+        "hospital.db"
+    )
+};
 
 
-Directory.CreateDirectory(appDataPath);
+string dbPath =
+    databasePaths.FirstOrDefault(File.Exists)
+    ??
+    databasePaths[0];
 
 
-var dbPath = Path.Combine(
-    appDataPath,
-    "hospital.db"
-);
+
+string? dbFolder =
+    Path.GetDirectoryName(dbPath);
+
+
+if (!string.IsNullOrEmpty(dbFolder))
+{
+    Directory.CreateDirectory(dbFolder);
+}
+
 
 
 
 // ===============================
-// ›Õ’ ﬁ«⁄œ… «·»Ì«‰« 
+// „⁄·Ê„«  ﬁ«⁄œ… «·»Ì«‰« 
 // ===============================
 
 Console.WriteLine("====================================");
-Console.WriteLine("Environment = " + builder.Environment.EnvironmentName);
-Console.WriteLine("Content Root = " + Directory.GetCurrentDirectory());
-Console.WriteLine("DB Path      = " + dbPath);
-Console.WriteLine("DB Exists    = " + File.Exists(dbPath));
+Console.WriteLine("Environment  = "
+    + builder.Environment.EnvironmentName);
+
+Console.WriteLine("Content Root = "
+    + Directory.GetCurrentDirectory());
+
+Console.WriteLine("DB Path      = "
+    + dbPath);
+
+Console.WriteLine("DB Exists    = "
+    + File.Exists(dbPath));
 
 
 if (File.Exists(dbPath))
 {
-    FileInfo info = new FileInfo(dbPath);
+    var info = new FileInfo(dbPath);
 
     Console.WriteLine(
-        "DB Size      = " + info.Length + " bytes"
+        "DB Size      = "
+        + info.Length
+        + " bytes"
     );
 }
 
@@ -60,12 +87,13 @@ Console.WriteLine("====================================");
 // SQLite
 // ===============================
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-{
-    options.UseSqlite(
-        $"Data Source={dbPath}"
-    );
-});
+builder.Services.AddDbContext<ApplicationDbContext>(
+    options =>
+    {
+        options.UseSqlite(
+            $"Data Source={dbPath}"
+        );
+    });
 
 
 
@@ -85,7 +113,7 @@ var app = builder.Build();
 
 
 // ===============================
-// «Œ »«— ﬁ«⁄œ… «·»Ì«‰« 
+// «Œ »«— «·« ’«·
 // ===============================
 
 using (var scope = app.Services.CreateScope())
@@ -97,24 +125,31 @@ using (var scope = app.Services.CreateScope())
             .GetRequiredService<ApplicationDbContext>();
 
 
-        // ·«  ‰‘∆ ﬁ«⁄œ… ÃœÌœ… ≈–« ﬂ«‰  €Ì— „ÊÃÊœ…
-        // ›ﬁÿ  Õﬁﬁ „‰ «·« ’«·
-        var canConnect = db.Database.CanConnect();
+        bool connected =
+            db.Database.CanConnect();
 
 
         Console.WriteLine(
-            "Database Connected = " + canConnect
+            "Database Connected = "
+            + connected
         );
 
 
-        if (canConnect)
+        if (connected)
         {
-            var doctorsCount =
+            int doctors =
                 db.Doctors.Count();
 
 
             Console.WriteLine(
-                "Doctors Count = " + doctorsCount
+                "Doctors Count = "
+                + doctors
+            );
+        }
+        else
+        {
+            Console.WriteLine(
+                "Database connection failed"
             );
         }
 
@@ -122,11 +157,11 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         Console.WriteLine(
-            "DATABASE ERROR:"
+            "DATABASE ERROR"
         );
 
         Console.WriteLine(
-            ex.Message
+            ex.ToString()
         );
     }
 }
@@ -135,8 +170,9 @@ using (var scope = app.Services.CreateScope())
 
 
 
+
 // ===============================
-// „⁄«·Ã… «·√Œÿ«¡
+// Error Handling
 // ===============================
 
 if (!app.Environment.IsDevelopment())
@@ -144,6 +180,7 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
 
 
 
@@ -168,7 +205,8 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Doctors}/{action=Index}/{id?}"
+    pattern:
+    "{controller=Doctors}/{action=Index}/{id?}"
 );
 
 
