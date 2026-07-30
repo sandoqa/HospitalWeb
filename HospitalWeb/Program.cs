@@ -3,59 +3,153 @@ using HospitalWeb.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ≈÷«›… MVC
+
+// ===============================
+// MVC
+// ===============================
 builder.Services.AddControllersWithViews();
 
-//  ÕœÌœ „”«— ﬁ«⁄œ… «·»Ì«‰« 
-var dbPath = Path.Combine(
+
+
+// ===============================
+//  ÕœÌœ ﬁ«⁄œ… «·»Ì«‰« 
+// ===============================
+
+var appDataPath = Path.Combine(
     Directory.GetCurrentDirectory(),
-    "App_Data",
+    "App_Data"
+);
+
+
+Directory.CreateDirectory(appDataPath);
+
+
+var dbPath = Path.Combine(
+    appDataPath,
     "hospital.db"
 );
 
-// ·· √ﬂœ „‰ «·„”«— ⁄·Ï Render
+
+
+// ===============================
+// ›Õ’ ﬁ«⁄œ… «·»Ì«‰« 
+// ===============================
+
 Console.WriteLine("====================================");
-Console.WriteLine("DB Path   = " + dbPath);
-Console.WriteLine("DB Exists = " + File.Exists(dbPath));
+Console.WriteLine("Environment = " + builder.Environment.EnvironmentName);
+Console.WriteLine("Content Root = " + Directory.GetCurrentDirectory());
+Console.WriteLine("DB Path      = " + dbPath);
+Console.WriteLine("DB Exists    = " + File.Exists(dbPath));
+
+
 if (File.Exists(dbPath))
 {
-    var info = new FileInfo(dbPath);
-    Console.WriteLine("DB Size   = " + info.Length + " bytes");
+    FileInfo info = new FileInfo(dbPath);
+
+    Console.WriteLine(
+        "DB Size      = " + info.Length + " bytes"
+    );
 }
+
 Console.WriteLine("====================================");
 
-// ≈‰‘«¡ „Ã·œ App_Data ≈–« ·„ Ìﬂ‰ „ÊÃÊœ«
-Directory.CreateDirectory(
-    Path.GetDirectoryName(dbPath)!
-);
 
-// —»ÿ SQLite
+
+
+// ===============================
+// SQLite
+// ===============================
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite($"Data Source={dbPath}"));
+{
+    options.UseSqlite(
+        $"Data Source={dbPath}"
+    );
+});
 
-//  ”ÃÌ· „” Ê—œ Access
+
+
+
+// ===============================
+// Access Importer
+// ===============================
+
 builder.Services.AddScoped<AccessImporter>();
+
+
+
 
 var app = builder.Build();
 
-// ≈‰‘«¡ ﬁ«⁄œ… «·»Ì«‰«  ≈–« ·„  ﬂ‰ „ÊÃÊœ…
+
+
+
+// ===============================
+// «Œ »«— ﬁ«⁄œ… «·»Ì«‰« 
+// ===============================
+
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider
-        .GetRequiredService<ApplicationDbContext>();
+    try
+    {
+        var db =
+            scope.ServiceProvider
+            .GetRequiredService<ApplicationDbContext>();
 
-    db.Database.EnsureCreated();
 
-    // ·· √ﬂœ „‰ ⁄œœ «·√ÿ»«¡
-    Console.WriteLine("Doctors Count = " + db.Doctors.Count());
+        // ·«  ‰‘∆ ﬁ«⁄œ… ÃœÌœ… ≈–« ﬂ«‰  €Ì— „ÊÃÊœ…
+        // ›ﬁÿ  Õﬁﬁ „‰ «·« ’«·
+        var canConnect = db.Database.CanConnect();
+
+
+        Console.WriteLine(
+            "Database Connected = " + canConnect
+        );
+
+
+        if (canConnect)
+        {
+            var doctorsCount =
+                db.Doctors.Count();
+
+
+            Console.WriteLine(
+                "Doctors Count = " + doctorsCount
+            );
+        }
+
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(
+            "DATABASE ERROR:"
+        );
+
+        Console.WriteLine(
+            ex.Message
+        );
+    }
 }
 
+
+
+
+
+// ===============================
 // „⁄«·Ã… «·√Œÿ«¡
+// ===============================
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
+
+
+// ===============================
+// Middleware
+// ===============================
 
 app.UseHttpsRedirection();
 
@@ -65,9 +159,18 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-// «·’›Õ… «·—∆Ì”Ì…
+
+
+
+// ===============================
+// Default Route
+// ===============================
+
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Doctors}/{action=Index}/{id?}");
+    pattern: "{controller=Doctors}/{action=Index}/{id?}"
+);
+
+
 
 app.Run();
