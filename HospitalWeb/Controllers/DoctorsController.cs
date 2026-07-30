@@ -42,14 +42,14 @@ namespace HospitalWeb.Controllers
 
                 doctors = doctors.Where(x =>
 
-                    x.الاسم.Contains(search)
+    x.الاسم.StartsWith(search)
 
-                    ||
+    ||
 
-                    (x.Phone != null &&
-                     x.Phone.Contains(search))
+    (x.Phone != null &&
+     x.Phone.StartsWith(search))
 
-                );
+);
             }
 
 

@@ -5,31 +5,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 // ==================================================
-//  ⁄ÿÌ· „—«ﬁ»… «·„·›«  ›Ì Render
-// ·„‰⁄ „‘ﬂ·… inotify limit
-// ==================================================
-
-builder.Configuration["DOTNET_USE_POLLING_FILE_WATCHER"] = "false";
-
-
-
-// ==================================================
 // MVC
 // ==================================================
 
 builder.Services.AddControllersWithViews();
 
 
-builder.Services.Configure<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions>(options =>
-{
-    options.AllowRecompilingViewsOnFileChange = false;
-});
-
-
-
 
 // ==================================================
-// «·»ÕÀ ⁄‰ ﬁ«⁄œ… «·»Ì«‰« 
+//  ÕœÌœ „”«— ﬁ«⁄œ… «·»Ì«‰« 
 // ==================================================
 
 string[] databasePaths =
@@ -55,16 +39,13 @@ string dbPath =
 
 
 
-string? dbFolder =
-    Path.GetDirectoryName(dbPath);
-
+string? dbFolder = Path.GetDirectoryName(dbPath);
 
 
 if (!string.IsNullOrEmpty(dbFolder))
 {
     Directory.CreateDirectory(dbFolder);
 }
-
 
 
 
@@ -75,26 +56,26 @@ if (!string.IsNullOrEmpty(dbFolder))
 Console.WriteLine("====================================");
 
 Console.WriteLine(
-    "Environment  = "
-    + builder.Environment.EnvironmentName
+    "Environment  = " +
+    builder.Environment.EnvironmentName
 );
 
 
 Console.WriteLine(
-    "Content Root = "
-    + Directory.GetCurrentDirectory()
+    "Content Root = " +
+    Directory.GetCurrentDirectory()
 );
 
 
 Console.WriteLine(
-    "DB Path      = "
-    + dbPath
+    "DB Path      = " +
+    dbPath
 );
 
 
 Console.WriteLine(
-    "DB Exists    = "
-    + File.Exists(dbPath)
+    "DB Exists    = " +
+    File.Exists(dbPath)
 );
 
 
@@ -103,11 +84,10 @@ if (File.Exists(dbPath))
 {
     FileInfo info = new FileInfo(dbPath);
 
-
     Console.WriteLine(
-        "DB Size      = "
-        + info.Length
-        + " bytes"
+        "DB Size      = " +
+        info.Length +
+        " bytes"
     );
 }
 
@@ -129,6 +109,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(
             $"Data Source={dbPath}"
         );
     });
+
 
 
 
@@ -157,7 +138,6 @@ using (var scope = app.Services.CreateScope())
 {
     try
     {
-
         var db =
             scope.ServiceProvider
             .GetRequiredService<ApplicationDbContext>();
@@ -167,45 +147,30 @@ using (var scope = app.Services.CreateScope())
             db.Database.CanConnect();
 
 
-
         Console.WriteLine(
-            "Database Connected = "
-            + connected
+            "Database Connected = " +
+            connected
         );
-
 
 
         if (connected)
         {
-
-            int doctors =
-                db.Doctors.Count();
-
-
-
             Console.WriteLine(
-                "Doctors Count = "
-                + doctors
+                "Doctors Count = " +
+                db.Doctors.Count()
             );
-
         }
 
     }
     catch (Exception ex)
     {
-
-        Console.WriteLine(
-            "DATABASE ERROR"
-        );
-
+        Console.WriteLine("DATABASE ERROR");
 
         Console.WriteLine(
             ex.ToString()
         );
-
     }
 }
-
 
 
 
@@ -226,11 +191,9 @@ if (!app.Environment.IsDevelopment())
 
 
 // ==================================================
-// Middleware
+// HTTPS
+// Render Ì Ê·Ï HTTPS
 // ==================================================
-
-// Render Ì ⁄«„· „⁄ HTTPS Œ«—ÃÌ«
-// ·–·ﬂ ·« ‰” Œœ„ Redirect ›Ì Production
 
 if (app.Environment.IsDevelopment())
 {
@@ -239,11 +202,15 @@ if (app.Environment.IsDevelopment())
 
 
 
+
+
+// ==================================================
+// Middleware
+// ==================================================
+
 app.UseStaticFiles();
 
-
 app.UseRouting();
-
 
 app.UseAuthorization();
 
@@ -260,7 +227,6 @@ app.MapControllerRoute(
     pattern:
     "{controller=Doctors}/{action=Index}/{id?}"
 );
-
 
 
 
