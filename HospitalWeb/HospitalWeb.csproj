@@ -13,18 +13,27 @@
 
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <None Remove="Templates\WordFiles\اشعار تدريب.docx" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="Templates\WordFiles\اشعار تدريب.docx">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
 
 	<ItemGroup>
 
-		<PackageReference Include="Microsoft.EntityFrameworkCore"
-						  Version="9.0.18" />
+		<PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" />
 
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite"
-						  Version="9.0.18" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.18" />
+
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.18" />
 
 
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools"
-						  Version="9.0.18">
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.18">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>
 				runtime; build; native; contentfiles; analyzers; buildtransitive
@@ -32,12 +41,10 @@
 		</PackageReference>
 
 
-		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design"
-						  Version="9.0.12" />
+		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.12" />
 
 
-		<PackageReference Include="System.Data.OleDb"
-						  Version="10.0.10" />
+		<PackageReference Include="System.Data.OleDb" Version="10.0.10" />
 
 	</ItemGroup>
 

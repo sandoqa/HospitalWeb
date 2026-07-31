@@ -1,14 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Wordprocessing;
 using HospitalWeb.Data;
 using HospitalWeb.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.IO;
+
 
 namespace HospitalWeb.Controllers
 {
     public class DoctorsController : Controller
     {
+
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _environment;
+
 
 
         public DoctorsController(
@@ -21,9 +28,11 @@ namespace HospitalWeb.Controllers
 
 
 
+
         // =========================
         // قائمة الأطباء + البحث + التنبيه
         // =========================
+
         public async Task<IActionResult> Index(string search)
         {
 
@@ -34,22 +43,17 @@ namespace HospitalWeb.Controllers
 
 
 
-            // البحث بالاسم أو رقم الهاتف
             if (!string.IsNullOrWhiteSpace(search))
             {
                 search = search.Trim();
 
 
                 doctors = doctors.Where(x =>
-
-    x.الاسم.StartsWith(search)
-
-    ||
-
-    (x.Phone != null &&
-     x.Phone.StartsWith(search))
-
-);
+                    x.الاسم.StartsWith(search)
+                    ||
+                    (x.Phone != null &&
+                     x.Phone.StartsWith(search))
+                );
             }
 
 
@@ -79,7 +83,7 @@ namespace HospitalWeb.Controllers
 
 
 
-            // ترتيب حسب قرب انتهاء التدريب
+
             result = result
                 .OrderBy(x =>
                     warningDays.ContainsKey(x.Id)
@@ -107,6 +111,7 @@ namespace HospitalWeb.Controllers
         // =========================
         // حساب الأيام المتبقية
         // =========================
+
         private int GetWarningDays(Doctor doctor)
         {
 
@@ -115,6 +120,7 @@ namespace HospitalWeb.Controllers
             {
                 return -1;
             }
+
 
 
 
@@ -145,6 +151,7 @@ namespace HospitalWeb.Controllers
 
 
 
+
             int remainingDays =
                 (currentRotation.EndDate.Date -
                  DateTime.Today).Days;
@@ -170,6 +177,7 @@ namespace HospitalWeb.Controllers
         // =========================
         // ملف الطبيب
         // =========================
+
         public async Task<IActionResult> Details(int? id)
         {
 
@@ -194,18 +202,15 @@ namespace HospitalWeb.Controllers
             return View(doctor);
 
         }
-
-
-
-
-
         // =========================
         // إضافة طبيب
         // =========================
+
         public IActionResult Create()
         {
             return View();
         }
+
 
 
 
@@ -239,9 +244,17 @@ namespace HospitalWeb.Controllers
 
             return View(doctor);
 
-        }        // =========================
-        // تعديل
+        }
+
+
+
+
+
+
         // =========================
+        // تعديل بيانات الطبيب
+        // =========================
+
         public async Task<IActionResult> Edit(int? id)
         {
 
@@ -268,6 +281,7 @@ namespace HospitalWeb.Controllers
 
 
 
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
@@ -281,13 +295,16 @@ namespace HospitalWeb.Controllers
 
 
 
+
             if (ModelState.IsValid)
             {
+
 
                 var oldDoctor =
                     await _context.Doctors
                     .AsNoTracking()
                     .FirstOrDefaultAsync(x => x.Id == id);
+
 
 
 
@@ -313,6 +330,7 @@ namespace HospitalWeb.Controllers
 
 
 
+
                 _context.Update(doctor);
 
                 await _context.SaveChangesAsync();
@@ -333,9 +351,13 @@ namespace HospitalWeb.Controllers
 
 
 
+
+
+
         // =========================
-        // حذف
+        // حذف الطبيب
         // =========================
+
         public async Task<IActionResult> Delete(int? id)
         {
 
@@ -399,9 +421,12 @@ namespace HospitalWeb.Controllers
 
 
 
+
+
         // =========================
         // حفظ صورة الطبيب
         // =========================
+
         private async Task<string> SaveImage(IFormFile imageFile)
         {
 
@@ -435,6 +460,7 @@ namespace HospitalWeb.Controllers
 
 
 
+
             using (var stream =
                 new FileStream(path, FileMode.Create))
             {
@@ -446,6 +472,8 @@ namespace HospitalWeb.Controllers
             return "/images/doctors/" + fileName;
 
         }
+
+
 
 
 
@@ -468,14 +496,10 @@ namespace HospitalWeb.Controllers
             }
 
         }
-
-
-
-
-
         // =========================
         // إضافة تدريب جديد للطبيب
         // =========================
+
         public async Task<IActionResult> AddTraining(int id)
         {
 
@@ -513,5 +537,199 @@ namespace HospitalWeb.Controllers
 
         }
 
+
+
+
+
+
+
+        // =========================
+        // إنشاء إشعار تدريب Word
+        // =========================
+
+        public async Task<IActionResult> TrainingNotice(int id)
+        {
+
+            var doctor =
+                await _context.Doctors
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+
+
+            if (doctor == null)
+            {
+                return NotFound();
+            }
+
+
+
+            string templatePath =
+                Path.Combine(
+                    _environment.ContentRootPath,
+                    "Templates",
+                    "WordFiles",
+                    "اشعار تدريب.docx"
+                );
+
+
+
+            if (!System.IO.File.Exists(templatePath))
+            {
+                return Content("ملف الوورد غير موجود: " + templatePath);
+            }
+
+
+
+            string outputFile =
+                Path.Combine(
+                    Path.GetTempPath(),
+                    $"اشعار تدريب - {doctor.الاسم}.docx"
+                );
+
+
+
+            // نسخ القالب إلى ملف مؤقت
+            System.IO.File.Copy(
+                templatePath,
+                outputFile,
+                true
+            );
+
+
+
+            // تعديل الـ Bookmarks
+            using (WordprocessingDocument wordDoc =
+                WordprocessingDocument.Open(outputFile, true))
+            {
+
+
+                var bookmarks =
+                    wordDoc.MainDocumentPart!
+                    .Document
+                    .Body!
+                    .Descendants<BookmarkStart>()
+                    .ToList();
+
+
+
+                foreach (var bookmark in bookmarks)
+                {
+
+                    if (bookmark.Name == "EmployeeName")
+                    {
+
+                        ReplaceBookmarkText(
+                            bookmark,
+                            doctor.الاسم
+                        );
+
+                    }
+
+
+
+                    if (bookmark.Name == "StartDate")
+                    {
+
+                        ReplaceBookmarkText(
+                            bookmark,
+                            doctor.تاريخ_المباشرة?
+                            .ToString("yyyy/MM/dd")
+                            ?? ""
+                        );
+
+                    }
+
+                }
+
+
+
+                wordDoc.MainDocumentPart.Document.Save();
+
+            }
+
+
+
+
+            byte[] fileBytes =
+                await System.IO.File.ReadAllBytesAsync(outputFile);
+
+
+
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                $"اشعار تدريب - {doctor.الاسم}.docx"
+            );
+
+        }
+
+
+
+
+        // =========================
+        // تعبئة Bookmark في Word
+        // =========================
+
+        // =========================
+        // تعبئة Bookmark مع تنسيق خاص
+        // =========================
+
+        private void ReplaceBookmarkText(
+            BookmarkStart bookmark,
+            string text)
+        {
+
+            var run = new Run();
+
+
+            // خصائص الخط
+            var runProperties = new RunProperties();
+
+
+            // حجم الخط 16
+            runProperties.Append(
+                new FontSize
+                {
+                    Val = "32"
+                }
+            );
+
+
+            // خط عريض Bold
+            runProperties.Append(
+                new Bold()
+            );
+
+
+            // لون الخط (أزرق)
+            runProperties.Append(
+                new Color
+                {
+                    Val = "0070C0"
+                }
+            );
+
+
+            // إضافة الخصائص للنص
+            run.Append(runProperties);
+
+
+            // النص داخل الـ Bookmark
+            run.Append(
+                new Text(text)
+                {
+                    Space = SpaceProcessingModeValues.Preserve
+                }
+            );
+
+
+
+            // وضع النص بعد الـ Bookmark
+            bookmark.Parent.InsertAfter(
+                run,
+                bookmark
+            );
+
+        }
     }
 }
