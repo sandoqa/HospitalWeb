@@ -137,11 +137,13 @@
                 <input type="submit"
                        value="حفظ"
                        class="btn btn-primary" />
+                <p style="color:red">
+                    DoctorId = @Model.DoctorId
+                </p>
 
-
-                <a asp-action="Index"
+                <a href="@Url.Action("Details", "Doctors", new { id = Model.DoctorId })"
                    class="btn btn-secondary">
-                    رجوع
+                    رجوع لملف الطبيب
                 </a>
 
 
@@ -308,13 +310,16 @@
 
 
 
-            document.getElementById("StartDate").value =
-                startDate.toISOString();
+                   document.getElementById("StartDate").value =
+            startDate.getFullYear() + "-" +
+            String(startDate.getMonth() + 1).padStart(2, '0') + "-" +
+            String(startDate.getDate()).padStart(2, '0');
 
 
-
-            document.getElementById("EndDate").value =
-                endDate.toISOString();
+        document.getElementById("EndDate").value =
+            endDate.getFullYear() + "-" +
+            String(endDate.getMonth() + 1).padStart(2, '0') + "-" +
+            String(endDate.getDate()).padStart(2, '0');
 
 
         }

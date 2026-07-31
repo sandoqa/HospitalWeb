@@ -240,6 +240,7 @@ namespace HospitalWeb.Controllers
         // =========================
         // تعديل التدريب
         // =========================
+
         public async Task<IActionResult> Edit(int? id)
         {
 
@@ -250,7 +251,9 @@ namespace HospitalWeb.Controllers
 
             var rotation =
                 await _context.TrainingRotations
-                .FindAsync(id);
+                .Include(x => x.Doctor)
+                .Include(x => x.Department)
+                .FirstOrDefaultAsync(x => x.Id == id);
 
 
 
@@ -274,9 +277,6 @@ namespace HospitalWeb.Controllers
 
 
 
-
-
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
@@ -294,7 +294,9 @@ namespace HospitalWeb.Controllers
 
                 _context.Update(trainingRotation);
 
+
                 await _context.SaveChangesAsync();
+
 
 
                 return RedirectToAction(
@@ -325,11 +327,10 @@ namespace HospitalWeb.Controllers
 
 
 
-
-
         // =========================
-        // حذف
+        // حذف التدريب
         // =========================
+
         public async Task<IActionResult> Delete(int? id)
         {
 
@@ -362,38 +363,38 @@ namespace HospitalWeb.Controllers
 
 
 
-
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(
-            int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-
             var rotation =
                 await _context.TrainingRotations
                 .FindAsync(id);
 
 
-
-            if (rotation != null)
+            if (rotation == null)
             {
-
-                _context.TrainingRotations
-                    .Remove(rotation);
-
-
-                await _context.SaveChangesAsync();
-
+                return NotFound();
             }
 
 
+            int doctorId = rotation.DoctorId;
+
+
+            _context.TrainingRotations.Remove(rotation);
+
+
+            await _context.SaveChangesAsync();
+
 
             return RedirectToAction(
-                "Index");
-
+                "Details",
+                "Doctors",
+                new
+                {
+                    id = doctorId
+                });
         }
-
-
 
 
 

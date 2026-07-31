@@ -731,5 +731,307 @@ namespace HospitalWeb.Controllers
             );
 
         }
+
+        // =========================
+        // إنشاء إنهاء امتياز Word
+        // =========================
+
+        public async Task<IActionResult> InternshipFinish(int id)
+        {
+            var doctor =
+                await _context.Doctors
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+
+            if (doctor == null)
+            {
+                return NotFound();
+            }
+
+
+            string templatePath =
+                Path.Combine(
+                    _environment.ContentRootPath,
+                    "Templates",
+                    "WordFiles",
+                    "انهاء امتياز.docx"
+                );
+
+
+            if (!System.IO.File.Exists(templatePath))
+            {
+                return Content("ملف الوورد غير موجود: " + templatePath);
+            }
+
+
+
+            string outputFile =
+                Path.Combine(
+                    Path.GetTempPath(),
+                    $"انهاء امتياز - {doctor.الاسم}.docx"
+                );
+
+
+
+            System.IO.File.Copy(
+                templatePath,
+                outputFile,
+                true
+            );
+
+
+
+            // أول تاريخ مباشرة
+            DateTime? startDate = doctor.تاريخ_المباشرة;
+
+
+            // تاريخ انتهاء الامتياز = سنة ناقص يوم
+            DateTime? endDate = null;
+
+            if (startDate.HasValue)
+            {
+                endDate =
+                    startDate.Value
+                    .AddYears(1)
+                    .AddDays(-1);
+            }
+
+
+
+
+            using (WordprocessingDocument wordDoc =
+                WordprocessingDocument.Open(outputFile, true))
+            {
+
+                var bookmarks =
+                    wordDoc.MainDocumentPart!
+                    .Document
+                    .Body!
+                    .Descendants<BookmarkStart>()
+                    .ToList();
+
+
+
+                foreach (var bookmark in bookmarks)
+                {
+
+                    if (bookmark.Name == "EmployeeName")
+                    {
+                        ReplaceBookmarkText(
+                            bookmark,
+                            doctor.الاسم
+                        );
+                    }
+
+
+
+                    if (bookmark.Name == "StartDate")
+                    {
+                        ReplaceBookmarkText(
+                            bookmark,
+                            startDate?
+                            .ToString("yyyy/MM/dd")
+                            ?? ""
+                        );
+                    }
+
+
+
+                    if (bookmark.Name == "EndDate")
+                    {
+                        ReplaceBookmarkText(
+                            bookmark,
+                            endDate?
+                            .ToString("yyyy/MM/dd")
+                            ?? ""
+                        );
+                    }
+
+                }
+
+
+                wordDoc.MainDocumentPart.Document.Save();
+
+            }
+
+
+
+            byte[] fileBytes =
+                await System.IO.File.ReadAllBytesAsync(outputFile);
+
+
+
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                $"انهاء امتياز - {doctor.الاسم}.docx"
+            );
+        }
+
+        // =========================
+        // إنشاء تحديد قسم Word
+        // =========================
+
+        public async Task<IActionResult> DepartmentAssignment(int id)
+        {
+            var doctor =
+                await _context.Doctors
+                .Include(x => x.TrainingRotations)
+                .ThenInclude(x => x.Department)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+
+            if (doctor == null)
+            {
+                return NotFound();
+            }
+
+
+
+            string templatePath =
+                Path.Combine(
+                    _environment.ContentRootPath,
+                    "Templates",
+                    "WordFiles",
+                    "تحديد قسم.docx"
+                );
+
+
+
+            if (!System.IO.File.Exists(templatePath))
+            {
+                return Content("ملف الوورد غير موجود: " + templatePath);
+            }
+
+
+
+            string outputFile =
+                Path.Combine(
+                    Path.GetTempPath(),
+                    $"تحديد قسم - {doctor.الاسم}.docx"
+                );
+
+
+
+            System.IO.File.Copy(
+                templatePath,
+                outputFile,
+                true
+            );
+
+
+
+            // آخر قسم تدريب للطبيب
+            var currentTraining =
+                doctor.TrainingRotations
+                .OrderByDescending(x => x.StartDate)
+                .FirstOrDefault();
+
+
+
+            string departmentName =
+                currentTraining?.Department?.Name
+                ?? "";
+
+
+
+            // بداية آخر قسم
+            DateTime? startDate =
+                currentTraining?.StartDate;
+
+
+
+            // نهاية آخر قسم
+            DateTime? endDate =
+                currentTraining?.EndDate;
+
+
+
+
+            using (WordprocessingDocument wordDoc =
+                WordprocessingDocument.Open(outputFile, true))
+            {
+
+                var bookmarks =
+                    wordDoc.MainDocumentPart!
+                    .Document
+                    .Body!
+                    .Descendants<BookmarkStart>()
+                    .ToList();
+
+
+
+                foreach (var bookmark in bookmarks)
+                {
+
+                    string bookmarkName =
+                        bookmark.Name?.Value ?? "";
+
+
+
+                    if (bookmarkName == "EmployeeName")
+                    {
+                        ReplaceBookmarkText(
+                            bookmark,
+                            doctor.الاسم
+                        );
+                    }
+
+
+
+                    if (bookmarkName == "startDate")
+                    {
+                        ReplaceBookmarkText(
+                            bookmark,
+                            startDate?
+                            .ToString("yyyy/MM/dd")
+                            ?? ""
+                        );
+                    }
+
+
+
+                    if (bookmarkName == "EndDate")
+                    {
+                        ReplaceBookmarkText(
+                            bookmark,
+                            endDate?
+                            .ToString("yyyy/MM/dd")
+                            ?? ""
+                        );
+                    }
+
+
+
+                    if (bookmarkName == "القسم")
+                    {
+                        ReplaceBookmarkText(
+                            bookmark,
+                            departmentName
+                        );
+                    }
+
+                }
+
+
+
+                wordDoc.MainDocumentPart.Document.Save();
+
+            }
+
+
+
+
+            byte[] fileBytes =
+                await System.IO.File.ReadAllBytesAsync(outputFile);
+
+
+
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                $"تحديد قسم - {doctor.الاسم}.docx"
+            );
+        }
     }
 }

@@ -13,34 +13,19 @@ builder.Services.AddControllersWithViews();
 
 
 // ==================================================
-//  ÕœÌœ „”«— ﬁ«⁄œ… «·»Ì«‰« 
+//  ÕœÌœ ﬁ«⁄œ… «·»Ì«‰«  („”«— À«» )
 // ==================================================
 
-string[] databasePaths =
-{
-    Path.Combine(
-        Directory.GetCurrentDirectory(),
-        "App_Data",
-        "hospital.db"
-    ),
-
-    Path.Combine(
-        Directory.GetCurrentDirectory(),
-        "hospital.db"
-    )
-};
+string dbPath = Path.Combine(
+    Directory.GetCurrentDirectory(),
+    "App_Data",
+    "hospital.db"
+);
 
 
-
-string dbPath =
-    databasePaths.FirstOrDefault(File.Exists)
-    ??
-    databasePaths[0];
-
-
+// ≈‰‘«¡ „Ã·œ App_Data ≈–« €Ì— „ÊÃÊœ
 
 string? dbFolder = Path.GetDirectoryName(dbPath);
-
 
 if (!string.IsNullOrEmpty(dbFolder))
 {
@@ -97,7 +82,6 @@ Console.WriteLine("====================================");
 
 
 
-
 // ==================================================
 // SQLite
 // ==================================================
@@ -109,7 +93,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(
             $"Data Source={dbPath}"
         );
     });
-
 
 
 
@@ -131,7 +114,7 @@ var app = builder.Build();
 
 
 // ==================================================
-// «Œ »«— ﬁ«⁄œ… «·»Ì«‰« 
+// «Œ »«— «·« ’«· »ﬁ«⁄œ… «·»Ì«‰« 
 // ==================================================
 
 using (var scope = app.Services.CreateScope())
@@ -158,6 +141,12 @@ using (var scope = app.Services.CreateScope())
             Console.WriteLine(
                 "Doctors Count = " +
                 db.Doctors.Count()
+            );
+
+
+            Console.WriteLine(
+                "Training Count = " +
+                db.TrainingRotations.Count()
             );
         }
 
@@ -189,17 +178,14 @@ if (!app.Environment.IsDevelopment())
 
 
 
-
 // ==================================================
 // HTTPS
-// Render Ì Ê·Ï HTTPS
 // ==================================================
 
 if (app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
-
 
 
 
