@@ -40,14 +40,14 @@ string dbPath = Path.Combine(
 );
 
 
-// ≈‰‘«¡ „Ã·œ App_Data
+// ≈‰‘«¡ App_Data
 
-string? dbFolder = Path.GetDirectoryName(dbPath);
-
-if (!string.IsNullOrEmpty(dbFolder))
-{
-    Directory.CreateDirectory(dbFolder);
-}
+Directory.CreateDirectory(
+    Path.Combine(
+        Directory.GetCurrentDirectory(),
+        "App_Data"
+    )
+);
 
 
 // ==================================================
@@ -57,43 +57,33 @@ if (!string.IsNullOrEmpty(dbFolder))
 Console.WriteLine("====================================");
 
 Console.WriteLine(
-    "Environment  = " +
-    builder.Environment.EnvironmentName
+    "Environment = " + builder.Environment.EnvironmentName
 );
 
 Console.WriteLine(
-    "Content Root = " +
-    Directory.GetCurrentDirectory()
+    "Content Root = " + Directory.GetCurrentDirectory()
 );
 
 Console.WriteLine(
-    "DB Path      = " +
-    dbPath
+    "DB Path = " + dbPath
 );
 
 Console.WriteLine(
-    "DB Full Path = " +
-    Path.GetFullPath(dbPath)
-);
-
-Console.WriteLine(
-    "DB Exists    = " +
-    File.Exists(dbPath)
+    "DB Exists = " + File.Exists(dbPath)
 );
 
 
 if (File.Exists(dbPath))
 {
-    FileInfo info = new FileInfo(dbPath);
-
     Console.WriteLine(
-        "DB Size      = " +
-        info.Length +
+        "DB Size = " +
+        new FileInfo(dbPath).Length +
         " bytes"
     );
 }
 
 Console.WriteLine("====================================");
+
 
 
 // ==================================================
@@ -109,6 +99,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(
     });
 
 
+
 // ==================================================
 // Access Importer
 // ==================================================
@@ -116,11 +107,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(
 builder.Services.AddScoped<AccessImporter>();
 
 
+
 // ==================================================
-// Build App
+// Build
 // ==================================================
 
 var app = builder.Build();
+
 
 
 // ==================================================
@@ -129,12 +122,14 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider
-        .GetRequiredService<ApplicationDbContext>();
-
     try
     {
+        var db = scope.ServiceProvider
+            .GetRequiredService<ApplicationDbContext>();
+
+
         bool connected = db.Database.CanConnect();
+
 
         Console.WriteLine(
             "Database Connected = " + connected
@@ -143,18 +138,21 @@ using (var scope = app.Services.CreateScope())
 
         if (connected)
         {
-            int doctorsCount = db.Doctors.Count();
+            int doctors =
+                db.Doctors.Count();
 
-            int trainingCount = db.TrainingRotations.Count();
+
+            int training =
+                db.TrainingRotations.Count();
 
 
             Console.WriteLine(
-                "Doctors Count = " + doctorsCount
+                "Doctors Count = " + doctors
             );
 
 
             Console.WriteLine(
-                "Training Count = " + trainingCount
+                "Training Count = " + training
             );
 
 
@@ -163,20 +161,23 @@ using (var scope = app.Services.CreateScope())
                     Directory.GetCurrentDirectory(),
                     "db_result.txt"
                 ),
-                "DB Path = " + dbPath + Environment.NewLine +
-                "DB Size = " + new FileInfo(dbPath).Length + Environment.NewLine +
-                "Doctors Count = " + doctorsCount + Environment.NewLine +
-                "Training Count = " + trainingCount
+                $"DB Path = {dbPath}\n" +
+                $"DB Size = {new FileInfo(dbPath).Length}\n" +
+                $"Doctors Count = {doctors}\n" +
+                $"Training Count = {training}"
             );
         }
+
     }
     catch (Exception ex)
     {
         Console.WriteLine(
-            "Database ERROR = " + ex.Message
+            "DATABASE ERROR = " + ex.Message
         );
     }
 }
+
+
 
 
 // ==================================================
@@ -190,15 +191,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 
-// ==================================================
-// HTTPS
-// ==================================================
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseHttpsRedirection();
-}
-
 
 // ==================================================
 // Middleware
@@ -211,8 +203,9 @@ app.UseRouting();
 app.UseAuthorization();
 
 
+
 // ==================================================
-// Default Route
+// Route
 // ==================================================
 
 app.MapControllerRoute(
@@ -222,8 +215,5 @@ app.MapControllerRoute(
 );
 
 
-// ==================================================
-// Run
-// ==================================================
 
 app.Run();
