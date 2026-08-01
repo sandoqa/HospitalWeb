@@ -3,29 +3,19 @@ using Microsoft.EntityFrameworkCore;
 
 
 // ==================================================
-// Builder - Render Production
+// Render Production Builder
 // ==================================================
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
     Args = args,
-    EnvironmentName = Environments.Production
+    EnvironmentName = Environments.Production,
+    ContentRootPath = Directory.GetCurrentDirectory()
 });
 
 
 // ==================================================
-// Render Port Fix
-// ==================================================
-
-var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
-
-builder.WebHost.UseUrls(
-    $"http://0.0.0.0:{port}"
-);
-
-
-// ==================================================
-//  ⁄ÿÌ· „—«ﬁ»… «·„·›«  ›Ì Render
+//  ⁄ÿÌ· File Watcher ›Ì Render
 // ==================================================
 
 builder.Configuration.Sources.Clear();
@@ -39,6 +29,17 @@ builder.Configuration
 
 
 // ==================================================
+// PORT Render
+// ==================================================
+
+var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
+
+builder.WebHost.UseUrls(
+    $"http://0.0.0.0:{port}"
+);
+
+
+// ==================================================
 // MVC
 // ==================================================
 
@@ -49,25 +50,23 @@ builder.Services.AddControllersWithViews();
 // Database Path
 // ==================================================
 
-string appDataFolder = Path.Combine(
+var appDataPath = Path.Combine(
     Directory.GetCurrentDirectory(),
     "App_Data"
 );
 
 
-Directory.CreateDirectory(appDataFolder);
+Directory.CreateDirectory(appDataPath);
 
 
-
-string dbPath = Path.Combine(
-    appDataFolder,
+var dbPath = Path.Combine(
+    appDataPath,
     "hospital.db"
 );
 
 
-
 // ==================================================
-// Database Information
+// Database Info
 // ==================================================
 
 Console.WriteLine("====================================");
@@ -77,15 +76,18 @@ Console.WriteLine(
     builder.Environment.EnvironmentName
 );
 
+
 Console.WriteLine(
     "Content Root = " +
     Directory.GetCurrentDirectory()
 );
 
+
 Console.WriteLine(
     "DB Path = " +
     dbPath
 );
+
 
 Console.WriteLine(
     "DB Exists = " +
@@ -107,6 +109,7 @@ Console.WriteLine(
     "PORT = " + port
 );
 
+
 Console.WriteLine("====================================");
 
 
@@ -122,7 +125,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(
             $"Data Source={dbPath}"
         );
     });
-
 
 
 // ==================================================
@@ -142,59 +144,55 @@ var app = builder.Build();
 
 
 // ==================================================
-// Database Test
+// Database Check
 // ==================================================
 
 using (var scope = app.Services.CreateScope())
 {
     try
     {
-        var db = scope.ServiceProvider
+        var db =
+            scope.ServiceProvider
             .GetRequiredService<ApplicationDbContext>();
 
 
-        bool connected = db.Database.CanConnect();
-
-
         Console.WriteLine(
-            "Database Connected = " + connected
+            "Database Connected = " +
+            db.Database.CanConnect()
         );
 
 
-        if (connected)
-        {
-            int doctors =
-                db.Doctors.Count();
+        int doctors =
+            db.Doctors.Count();
 
 
-            int training =
-                db.TrainingRotations.Count();
+        int training =
+            db.TrainingRotations.Count();
 
 
 
-            Console.WriteLine(
-                "Doctors Count = " +
-                doctors
-            );
+        Console.WriteLine(
+            "Doctors Count = " +
+            doctors
+        );
 
 
-            Console.WriteLine(
-                "Training Count = " +
-                training
-            );
+        Console.WriteLine(
+            "Training Count = " +
+            training
+        );
 
 
-            File.WriteAllText(
-                Path.Combine(
-                    Directory.GetCurrentDirectory(),
-                    "db_result.txt"
-                ),
-                "DB Path = " + dbPath + Environment.NewLine +
-                "DB Size = " + new FileInfo(dbPath).Length + Environment.NewLine +
-                "Doctors Count = " + doctors + Environment.NewLine +
-                "Training Count = " + training
-            );
-        }
+        File.WriteAllText(
+            Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "db_result.txt"
+            ),
+            $"DB Path = {dbPath}\n" +
+            $"DB Size = {new FileInfo(dbPath).Length}\n" +
+            $"Doctors Count = {doctors}\n" +
+            $"Training Count = {training}"
+        );
 
     }
     catch (Exception ex)
@@ -209,7 +207,7 @@ using (var scope = app.Services.CreateScope())
 
 
 // ==================================================
-// Error Handling
+// Middleware
 // ==================================================
 
 if (!app.Environment.IsDevelopment())
@@ -219,10 +217,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 
-
-// ==================================================
-// Middleware
-// ==================================================
 
 app.UseStaticFiles();
 
