@@ -1,7 +1,25 @@
 using HospitalWeb.Data;
 using Microsoft.EntityFrameworkCore;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    EnvironmentName = Environments.Production
+});
+
+
+// ==================================================
+//  ⁄ÿÌ· „—«ﬁ»… «·„·›«  ›Ì Render
+// ==================================================
+
+builder.Configuration.Sources.Clear();
+
+builder.Configuration
+    .AddJsonFile(
+        "appsettings.json",
+        optional: false,
+        reloadOnChange: false
+    );
 
 
 // ==================================================
