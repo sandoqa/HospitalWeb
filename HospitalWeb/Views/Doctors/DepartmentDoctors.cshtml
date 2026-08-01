@@ -1,0 +1,97 @@
+﻿@model IEnumerable<HospitalWeb.Models.Doctor>
+
+@{
+    ViewData["Title"] = "أطباء القسم";
+}
+
+
+<div class="container mt-4" dir="rtl">
+
+
+    <h2 class="text-center text-primary">
+
+        👨‍⚕️ أطباء قسم @ViewBag.DepartmentName
+
+    </h2>
+
+
+    <h5 class="text-center">
+
+        عدد الأطباء الحاليين:
+        @Model.Count()
+
+    </h5>
+
+
+
+    <table class="table table-bordered table-striped text-center">
+
+        <thead class="table-dark">
+
+            <tr>
+
+                <th>الاسم</th>
+                <th>رقم الطبيب</th>
+                <th>الهاتف</th>
+                <th>الملف</th>
+
+            </tr>
+
+        </thead>
+
+
+        <tbody>
+
+
+            @foreach (var doctor in Model)
+            {
+
+                <tr>
+
+                    <td>
+                        @doctor.الاسم
+                    </td>
+
+
+                    <td>
+                        @doctor.رقم_الطبيب
+                    </td>
+
+
+                    <td>
+                        @doctor.Phone
+                    </td>
+
+
+                    <td>
+
+                        <a asp-action="Details"
+                           asp-route-id="@doctor.Id"
+                           class="btn btn-info btn-sm">
+
+                            ملف
+
+                        </a>
+
+                    </td>
+
+
+                </tr>
+
+            }
+
+
+        </tbody>
+
+    </table>
+
+
+    <a asp-action="Index"
+       class="btn btn-secondary">
+
+        رجوع
+
+    </a>
+
+
+</div>

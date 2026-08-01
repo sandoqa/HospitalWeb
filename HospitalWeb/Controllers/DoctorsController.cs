@@ -95,12 +95,56 @@ namespace HospitalWeb.Controllers
                 .ToList();
 
 
-
             ViewBag.WarningDays = warningDays;
 
             ViewBag.Search = search;
 
 
+            // =========================
+            // إحصائيات الصفحة الرئيسية
+            // =========================
+
+            ViewBag.DoctorsCount =
+                await _context.Doctors.CountAsync();
+
+
+            ViewBag.DepartmentsCount =
+                await _context.Departments.CountAsync();
+
+
+            ViewBag.TrainingCount =
+                await _context.TrainingRotations.CountAsync();
+
+            // =========================
+            // إحصائية الأطباء الموجودين حاليا في الأقسام
+            // حسب تاريخ بداية ونهاية التدريب
+            // =========================
+
+            var today = DateTime.Today;
+
+
+            var currentDepartments =
+                await _context.TrainingRotations
+                .Include(x => x.Department)
+                .Where(x =>
+                    x.StartDate.Date <= today &&
+                    x.EndDate.Date >= today
+                )
+                .GroupBy(x => x.Department.Name)
+                .Select(g => new
+                {
+                    Department = g.Key,
+
+                    Count = g.Select(x => x.DoctorId)
+                             .Distinct()
+                             .Count()
+                })
+                .OrderByDescending(x => x.Count)
+                .ToListAsync();
+
+
+
+            ViewBag.CurrentDepartments = currentDepartments;
 
             return View(result);
 
@@ -1030,6 +1074,40 @@ namespace HospitalWeb.Controllers
                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 $"تحديد قسم - {doctor.الاسم}.docx"
             );
+        }
+    
+    // =========================
+// الأطباء الحاليين في قسم معين
+// =========================
+
+public async Task<IActionResult> DepartmentDoctors(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return RedirectToAction(nameof(Index));
+
+
+            var today = DateTime.Today;
+
+
+            var doctors =
+                await _context.TrainingRotations
+                .Include(x => x.Doctor)
+                .Include(x => x.Department)
+                .Where(x =>
+                    x.Department.Name == name &&
+                    x.StartDate.Date <= today &&
+                    x.EndDate.Date >= today
+                )
+                .Select(x => x.Doctor)
+                .Distinct()
+                .ToListAsync();
+
+
+
+            ViewBag.DepartmentName = name;
+
+
+            return View(doctors);
         }
     }
 }

@@ -8,131 +8,289 @@
     var warningDays =
         ViewBag.WarningDays as Dictionary<int, int>
         ?? new Dictionary<int, int>();
+
+
+    var doctorsCount = ViewBag.DoctorsCount ?? 0;
+    var departmentsCount = ViewBag.DepartmentsCount ?? 0;
+    var trainingCount = ViewBag.TrainingCount ?? 0;
+
+
+    var currentDepartments =
+        ViewBag.CurrentDepartments;
 }
 
 
-<div class="container-fluid" dir="rtl">
+<div class="container-fluid mt-3" dir="rtl">
 
 
-<h1 class="text-center mb-4">
-    قائمة الأطباء
-</h1>
+    <!-- شعار المستشفى + صورة المستخدم -->
+
+    <div class="d-flex justify-content-center align-items-center gap-4 mb-3">
+
+        <!-- شعار المستشفى -->
+        <img src="~/images/OIP.webp"
+             class="hospital-logo" />
 
 
-<h5 class="text-primary text-center">
-    عدد الأطباء:
-    <span id="resultCount">
-        @doctors.Count()
-    </span>
-</h5>
+        <!-- الصورة الشخصية -->
+        <img src="~/images/sandoqa.jpg"
+             class="personal-logo" />
+
+    </div>
+
+
+
+    <h1 class="text-center text-primary mb-4">
+        🏥 نظام تدريب الأطباء
+    </h1>
+
+
+
+
+    <!-- بطاقات الإحصائيات -->
+
+    <div class="row g-3 mb-4">
+
+
+        <div class="col-md-4">
+
+            <div class="card shadow stat-card text-center">
+
+                <div class="card-body">
+
+                    <h2>👨‍⚕️</h2>
+
+                    <h5>
+                        عدد الأطباء
+                    </h5>
+
+                    <h2 class="text-primary">
+                        @doctorsCount
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+
+        <div class="col-md-4">
+
+            <div class="card shadow stat-card text-center">
+
+                <div class="card-body">
+
+                    <h2>🏥</h2>
+
+                    <h5>
+                        عدد الأقسام
+                    </h5>
+
+                    <h2 class="text-success">
+                        @departmentsCount
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+
+        <div class="col-md-4">
+
+            <div class="card shadow stat-card text-center">
+
+                <div class="card-body">
+
+                    <h2>📚</h2>
+
+                    <h5>
+                        عدد التدريبات
+                    </h5>
+
+                    <h2 class="text-danger">
+                        @trainingCount
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+
+
+
+    <!-- الرسم البياني للأطباء الموجودين حاليا -->
+
+    <div class="card shadow mb-4">
+
+
+        <div class="card-header bg-primary text-white text-center">
+
+            👨‍⚕️ الأطباء الموجودون حالياً في الأقسام
+
+        </div>
+
+
+        <div class="card-body">
+
+
+            <canvas id="departmentChart"
+                    style="max-height:350px;">
+            </canvas>
+
+
+        </div>
+
+
+    </div>
+
+
+
+
+
+    <h5 class="text-center text-secondary">
+
+        عدد الأطباء:
+
+        <span id="resultCount">
+
+            @doctors.Count()
+
+        </span>
+
+    </h5>
+
 
 
 
 @if (warningDays.Any())
 {
-    <div class="alert alert-danger text-center">
-        يوجد @warningDays.Count طبيب قريب من انتهاء الروتيشن
-    </div>
+
+        <div class="alert alert-danger text-center shadow">
+
+            ⚠️ يوجد
+            @warningDays.Count
+            طبيب قريب من انتهاء الروتيشن
+
+        </div>
+
 }
 
 
 
 
 
-<!-- البحث -->
+    <!-- البحث والأزرار -->
 
-<div class="row mb-3">
-
-    <div class="col-md-6">
-
-        <div class="input-group">
-
-            <input type="text"
-                   id="doctorSearch"
-                   class="form-control"
-                   placeholder="🔍 ابحث باسم الطبيب أو الرقم..." />
+    <div class="row mb-3">
 
 
-            <button id="clearSearch"
-                    type="button"
-                    class="btn btn-secondary">
-                مسح
-            </button>
+        <div class="col-md-6 mb-2">
+
+
+            <div class="input-group">
+
+
+                <input type="text"
+                       id="doctorSearch"
+                       class="form-control"
+                       placeholder="🔍 ابحث باسم الطبيب أو الرقم..." />
+
+
+                <button id="clearSearch"
+                        class="btn btn-secondary">
+
+                    مسح
+
+                </button>
+
+
+            </div>
+
 
         </div>
 
+
+
+        <div class="col-md-6 text-center">
+
+
+            <a asp-action="Create"
+               class="btn btn-success m-1">
+
+                ➕ إضافة طبيب
+
+            </a>
+
+
+            <a asp-controller="Backup"
+               asp-action="Download"
+               class="btn btn-primary m-1">
+
+                📥 نسخة احتياطية
+
+            </a>
+
+
+            <a asp-controller="Import"
+               asp-action="Access"
+               class="btn btn-dark m-1">
+
+                📂 استيراد Access
+
+            </a>
+
+
+        </div>
+
+
     </div>
+    <!-- جدول الأطباء -->
+
+    <div class="table-responsive shadow-sm">
 
 
-
-    <div class="col-md-6 text-center text-md-end">
-
-
-        <a asp-action="Create"
-           class="btn btn-success mb-2">
-            + إضافة طبيب
-                <a asp-controller="Backup"
-                   asp-action="Download"
-                   class="btn btn-success">
-                    📥 تحميل نسخة احتياطية
-                </a>
-
-        </a>
+        <table class="table table-bordered table-striped text-center align-middle">
 
 
+            <thead class="table-dark">
 
-        <a asp-controller="Import"
-           asp-action="Access"
-           class="btn btn-dark mb-2">
-            📥 استيراد Access
-        </a>
+                <tr>
 
+                    <th>الصورة</th>
+                    <th>الاسم</th>
+                    <th>رقم الطبيب</th>
+                    <th>الجامعة</th>
+                    <th>سنة التخرج</th>
+                    <th>الهاتف</th>
+                    <th>التنبيه</th>
+                    <th>التدريبات</th>
+                    <th>الإجراءات</th>
 
-    </div>
+                </tr>
 
-</div>
-
-
-
-
-
-<!-- جدول الأطباء -->
-
-
-<div class="table-responsive">
+            </thead>
 
 
-<table class="table table-bordered table-striped text-center align-middle">
+            <tbody>
 
 
+                @foreach (var item in doctors)
+                {
 
-<thead class="table-dark">
-
-<tr>
-
-<th>الصورة</th>
-<th>الاسم</th>
-<th>رقم الطبيب</th>
-<th>الجامعة</th>
-<th>سنة التخرج</th>
-<th>الهاتف</th>
-<th>التنبيه</th>
-<th>التدريبات</th>
-<th>الإجراءات</th>
-
-</tr>
-
-</thead>
-
-
-<tbody>
-
-
-
-@foreach (var item in doctors)
-{
-
-    warningDays.TryGetValue(item.Id, out int days);
+                    warningDays.TryGetValue(item.Id, out int days);
 
 
                     var alertClass = days switch
@@ -144,12 +302,14 @@
                         5 => "green-blink",
                         _ => ""
                     };
-                   
 
-    <tr class="@alertClass doctor-item"
-        data-name="@item.الاسم.ToLower()"
-        data-phone="@item.Phone"
-        data-number="@item.رقم_الطبيب">
+
+                    <tr class="@alertClass doctor-item"
+                        data-name="@item.الاسم.ToLower()"
+                        data-phone="@item.Phone"
+                        data-number="@item.رقم_الطبيب">
+
+
                         <td>
 
                             @if (!string.IsNullOrEmpty(item.ImagePath))
@@ -217,105 +377,146 @@
 
 
 
-
                         <td>
 
                             @if (item.TrainingRotations != null &&
                                                     item.TrainingRotations.Any())
                             {
                                 <span class="badge bg-primary">
+
                                     @item.TrainingRotations.Count تدريب
+
                                 </span>
                             }
                             else
                             {
                                 <span class="badge bg-secondary">
+
                                     لا يوجد
+
                                 </span>
                             }
 
                         </td>
-
 
 
 
                         <td>
 
 
-                            <a asp-action="Details"
-                               asp-route-id="@item.Id"
-                               class="btn btn-info btn-sm">
-                                ملف
-                            </a>
+                            <div class="d-flex flex-wrap justify-content-center gap-1">
 
 
-
-                            <a asp-action="Edit"
-                               asp-route-id="@item.Id"
-                               class="btn btn-warning btn-sm">
-                                تعديل
-                            </a>
-
+                                <a asp-action="Details"
+                                   asp-route-id="@item.Id"
+                                   class="btn btn-info btn-sm">
+                                    ملف
+                                </a>
 
 
-                            <a asp-action="Delete"
-                               asp-route-id="@item.Id"
-                               class="btn btn-danger btn-sm">
-                                حذف
-                            </a>
-                            <a asp-action="TrainingNotice"
-                               asp-route-id="@item.Id"
-                               class="btn btn-primary btn-sm">
-                                📄 إشعار تدريب
-                            </a>
-                            <a asp-action="InternshipFinish"
-                               asp-route-id="@item.Id"
-                               class="btn btn-success btn-sm">
-                                📄 إنهاء امتياز
-                            </a>
-                            <a asp-action="DepartmentAssignment"
-                               asp-route-id="@item.Id"
-                               class="btn btn-secondary btn-sm">
-                                📄 تحديد قسم
-                            </a>
+                                <a asp-action="Edit"
+                                   asp-route-id="@item.Id"
+                                   class="btn btn-warning btn-sm">
+                                    تعديل
+                                </a>
+
+
+                                <a asp-action="Delete"
+                                   asp-route-id="@item.Id"
+                                   class="btn btn-danger btn-sm">
+                                    حذف
+                                </a>
+
+
+                                <a asp-action="TrainingNotice"
+                                   asp-route-id="@item.Id"
+                                   class="btn btn-primary btn-sm">
+                                    📄 إشعار
+                                </a>
+
+
+                                <a asp-action="InternshipFinish"
+                                   asp-route-id="@item.Id"
+                                   class="btn btn-success btn-sm">
+                                    📄 إنهاء
+                                </a>
+
+
+                                <a asp-action="DepartmentAssignment"
+                                   asp-route-id="@item.Id"
+                                   class="btn btn-secondary btn-sm">
+                                    📄 تحديد قسم
+                                </a>
+
+
+                            </div>
+
+
                         </td>
 
 
                     </tr>
-
 
                 }
 
 
             </tbody>
 
-
         </table>
 
 
     </div>
+
+
+
+
+
     <style>
+
 
         body {
             overflow-x: hidden;
         }
 
 
-        /* صورة الطبيب */
 
-        .doctor-img {
-            width: 70px;
-            height: 70px;
+        .hospital-logo {
+            width: 190px !important;
+            height: 190px !important;
+            object-fit: contain;
+        }
+
+
+        .personal-logo {
+            width: 95px;
+            height: 95px;
             object-fit: cover;
-            border-radius: 10px;
+            border-radius: 50%;
+        }
+
+        .stat-card {
+            border-radius: 20px;
+            transition: .3s;
         }
 
 
 
-        /* ======================
-           وميض التنبيهات
-        ====================== */
+            .stat-card:hover {
+                transform: translateY(-5px);
+            }
 
+
+
+        .doctor-img {
+            width: 45px;
+            height: 45px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+
+
+        /* التنبيهات */
 
         tr.danger-blink td {
             animation: redBlink 1s infinite;
@@ -412,91 +613,197 @@
             }
         }
 
+
+
+        @@media(max-width:768px) {
+
+            .table {
+                font-size: 12px;
+            }
+
+
+            .btn-sm {
+                font-size: 11px;
+                padding: 3px;
+            }
+        }
+
     </style>
 
 
 
 
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
     <script>
 
 
+        // الرسم البياني
+
+        const departmentLabels = [
+
+        @foreach (var item in ViewBag.CurrentDepartments)
+        {
+                @Html.Raw($"'{item.Department}',")
+        }
+
+        ];
+
+
+        const departmentCounts = [
+
+        @foreach (var item in ViewBag.CurrentDepartments)
+        {
+                @Html.Raw($"{item.Count},")
+        }
+
+        ];
+
+
+
+               new Chart(
+        document.getElementById('departmentChart'),
+        {
+
+        type:'bar',
+
+        data:{
+
+        labels:departmentLabels,
+
+        datasets:[{
+
+        label:'الأطباء الحاليين',
+
+        data:departmentCounts
+
+        }]
+
+        },
+
+
+        options:{
+
+        responsive:true,
+
+
+        onClick:function(event, elements)
+        {
+
+            if(elements.length > 0)
+            {
+
+                let index = elements[0].index;
+
+
+                let departmentName =
+                departmentLabels[index];
+
+
+                   window.location.assign(
+        '/Doctors/DepartmentDoctors?name='
+        + encodeURIComponent(departmentName)
+        );
+            }
+
+        },
+
+
+        scales:{
+
+        y:{
+
+        beginAtZero:true,
+
+        ticks:{
+
+        precision:0
+
+        }
+
+        }
+
+        }
+
+        }
+
+        });
+
+
+
+        // البحث
+
+
         const searchBox =
-            document.getElementById("doctorSearch");
+        document.getElementById("doctorSearch");
 
 
         const clearButton =
-            document.getElementById("clearSearch");
+        document.getElementById("clearSearch");
 
 
         const doctors =
-            document.querySelectorAll(".doctor-item");
+        document.querySelectorAll(".doctor-item");
 
 
         const resultCount =
-            document.getElementById("resultCount");
+        document.getElementById("resultCount");
 
 
 
+        searchBox.addEventListener("input",function(){
 
 
-        searchBox.addEventListener("input", function(){
-
-
-            let value =
-                this.value.trim().toLowerCase();
-
-
-            let count = 0;
+        let value=this.value
+        .trim()
+        .toLowerCase();
 
 
 
-            doctors.forEach(item => {
+        let count=0;
 
 
 
-                let name =
-                    item.dataset.name || "";
+        doctors.forEach(item=>{
 
 
-                let phone =
-                    item.dataset.phone || "";
+        let name=item.dataset.name || "";
 
+        let phone=item.dataset.phone || "";
 
-                let number =
-                    item.dataset.number || "";
-
-
-
-                if(
-                    name.includes(value) ||
-                    phone.includes(value) ||
-                    number.includes(value)
-                )
-
-                {
-
-                    item.style.display="";
-
-                    count++;
-
-                }
-
-                else
-
-                {
-
-                    item.style.display="none";
-
-                }
+        let number=item.dataset.number || "";
 
 
 
-            });
+        if(
+        name.includes(value) ||
+        phone.includes(value) ||
+        number.includes(value)
+        )
+
+        {
+
+        item.style.display="";
+        count++;
+
+        }
+
+        else
+
+        {
+
+        item.style.display="none";
+
+        }
+
+
+        });
 
 
 
-            resultCount.innerText=count;
+        resultCount.innerText=count;
 
 
         });
@@ -504,24 +811,22 @@
 
 
 
-
-
         clearButton.addEventListener("click",function(){
 
 
-            searchBox.value="";
+        searchBox.value="";
 
 
-            doctors.forEach(item=>{
+        doctors.forEach(item=>{
 
-                item.style.display="";
+        item.style.display="";
 
-            });
+        });
 
 
 
-            resultCount.innerText =
-                doctors.length;
+        resultCount.innerText=
+        doctors.length;
 
 
         });
