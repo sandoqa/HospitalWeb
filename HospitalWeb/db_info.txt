@@ -1,0 +1,4 @@
+DB Path = C:\Users\Mahmoud\Desktop\m12\HospitalWeb\HospitalWeb\App_Data\hospital_backup_447.db
+DB Exists = True
+DB Size = 184320 bytes
+Doctors Count = Check after connection

@@ -1,0 +1,4 @@
+DB Path = C:\Users\Mahmoud\Desktop\m12\HospitalWeb\HospitalWeb\App_Data\hospital_backup_447.db
+DB Size = 184320
+Doctors Count = 446
+Training Count = 1268

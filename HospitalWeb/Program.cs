@@ -3,6 +3,16 @@ using Microsoft.EntityFrameworkCore;
 
 
 // ==================================================
+// Render Fix - Disable File Watcher
+// ==================================================
+
+Environment.SetEnvironmentVariable(
+    "DOTNET_USE_POLLING_FILE_WATCHER",
+    "true"
+);
+
+
+// ==================================================
 // Render Production Builder
 // ==================================================
 
@@ -15,7 +25,7 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 
 
 // ==================================================
-// ΚΪΨνα File Watcher έν Render
+// Disable Configuration Reload Watcher
 // ==================================================
 
 builder.Configuration.Sources.Clear();
@@ -29,7 +39,7 @@ builder.Configuration
 
 
 // ==================================================
-// PORT Render
+// Render PORT
 // ==================================================
 
 var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
@@ -55,7 +65,6 @@ var appDataPath = Path.Combine(
     "App_Data"
 );
 
-
 Directory.CreateDirectory(appDataPath);
 
 
@@ -66,7 +75,7 @@ var dbPath = Path.Combine(
 
 
 // ==================================================
-// Database Info
+// Database Information
 // ==================================================
 
 Console.WriteLine("====================================");
@@ -76,18 +85,15 @@ Console.WriteLine(
     builder.Environment.EnvironmentName
 );
 
-
 Console.WriteLine(
     "Content Root = " +
     Directory.GetCurrentDirectory()
 );
 
-
 Console.WriteLine(
     "DB Path = " +
     dbPath
 );
-
 
 Console.WriteLine(
     "DB Exists = " +
@@ -109,9 +115,7 @@ Console.WriteLine(
     "PORT = " + port
 );
 
-
 Console.WriteLine("====================================");
-
 
 
 // ==================================================
@@ -134,13 +138,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(
 builder.Services.AddScoped<AccessImporter>();
 
 
-
 // ==================================================
 // Build
 // ==================================================
 
 var app = builder.Build();
-
 
 
 // ==================================================
@@ -151,59 +153,54 @@ using (var scope = app.Services.CreateScope())
 {
     try
     {
-        var db =
-            scope.ServiceProvider
+        var db = scope.ServiceProvider
             .GetRequiredService<ApplicationDbContext>();
 
 
-        Console.WriteLine(
-            "Database Connected = " +
-            db.Database.CanConnect()
-        );
-
-
-        int doctors =
-            db.Doctors.Count();
-
-
-        int training =
-            db.TrainingRotations.Count();
-
+        bool connected = db.Database.CanConnect();
 
 
         Console.WriteLine(
-            "Doctors Count = " +
-            doctors
+            "Database Connected = " + connected
         );
 
 
-        Console.WriteLine(
-            "Training Count = " +
-            training
-        );
+        if (connected)
+        {
+            int doctors = db.Doctors.Count();
+
+            int training = db.TrainingRotations.Count();
 
 
-        File.WriteAllText(
-            Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "db_result.txt"
-            ),
-            $"DB Path = {dbPath}\n" +
-            $"DB Size = {new FileInfo(dbPath).Length}\n" +
-            $"Doctors Count = {doctors}\n" +
-            $"Training Count = {training}"
-        );
+            Console.WriteLine(
+                "Doctors Count = " + doctors
+            );
 
+
+            Console.WriteLine(
+                "Training Count = " + training
+            );
+
+
+            File.WriteAllText(
+                Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "db_result.txt"
+                ),
+                $"DB Path = {dbPath}\n" +
+                $"DB Size = {new FileInfo(dbPath).Length}\n" +
+                $"Doctors Count = {doctors}\n" +
+                $"Training Count = {training}"
+            );
+        }
     }
     catch (Exception ex)
     {
         Console.WriteLine(
-            "DATABASE ERROR = " +
-            ex.Message
+            "DATABASE ERROR = " + ex.Message
         );
     }
 }
-
 
 
 // ==================================================
@@ -217,13 +214,11 @@ if (!app.Environment.IsDevelopment())
 }
 
 
-
 app.UseStaticFiles();
 
 app.UseRouting();
 
 app.UseAuthorization();
-
 
 
 // ==================================================
@@ -235,7 +230,6 @@ app.MapControllerRoute(
     pattern:
     "{controller=Doctors}/{action=Index}/{id?}"
 );
-
 
 
 // ==================================================

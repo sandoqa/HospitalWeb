@@ -1,0 +1,11 @@
+.gitignore
+HospitalWeb/Controllers/DoctorsController.cs
+HospitalWeb/Controllers/TrainingRotationsController.cs
+HospitalWeb/HospitalWeb.csproj
+HospitalWeb/Program.cs
+"HospitalWeb/Templates/WordFiles/\330\247\331\206\331\207\330\247\330\241 \330\247\331\205\330\252\331\212\330\247\330\262.docx"
+"HospitalWeb/Templates/WordFiles/\330\252\330\255\330\257\331\212\330\257 \331\202\330\263\331\205.docx"
+HospitalWeb/Views/Doctors/Index.cshtml
+HospitalWeb/Views/TrainingRotations/Create.cshtml
+HospitalWeb/Views/TrainingRotations/Delete.cshtml
+HospitalWeb/Views/TrainingRotations/Edit.cshtml
