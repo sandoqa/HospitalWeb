@@ -3,32 +3,38 @@ using Microsoft.EntityFrameworkCore;
 
 
 // ===============================================
-// Render Production Builder
+// Disable File Watcher for Render BEFORE Builder
 // ===============================================
 
-var builder = WebApplication.CreateBuilder(
-    new WebApplicationOptions
-    {
-        Args = args,
-        EnvironmentName = Environments.Production,
-        ContentRootPath = Directory.GetCurrentDirectory()
-    });
+Environment.SetEnvironmentVariable(
+    "DOTNET_USE_POLLING_FILE_WATCHER",
+    "0"
+);
 
 
 // ===============================================
-// Disable File Watching
+// Builder
+// ===============================================
+
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    EnvironmentName = Environments.Production,
+    ContentRootPath = Directory.GetCurrentDirectory()
+});
+
+
+// ===============================================
+// Configuration
 // ===============================================
 
 builder.Configuration.Sources.Clear();
 
-builder.Configuration
-    .AddJsonFile(
-        "appsettings.json",
-        optional: false,
-        reloadOnChange: false
-    )
-    .AddEnvironmentVariables();
-
+builder.Configuration.AddJsonFile(
+    "appsettings.json",
+    optional: false,
+    reloadOnChange: false
+);
 
 
 // ===============================================
@@ -45,7 +51,6 @@ builder.WebHost.UseUrls(
 );
 
 
-
 // ===============================================
 // MVC
 // ===============================================
@@ -53,75 +58,57 @@ builder.WebHost.UseUrls(
 builder.Services.AddControllersWithViews();
 
 
+// ===============================================
+// Database
+// ===============================================
+
+var appData =
+    Path.Combine(
+        Directory.GetCurrentDirectory(),
+        "App_Data"
+    );
+
+
+Directory.CreateDirectory(appData);
+
+
+var dbPath =
+    Path.Combine(
+        appData,
+        "hospital.db"
+    );
+
 
 // ===============================================
-// Database Path
-// ===============================================
-
-var appDataPath = Path.Combine(
-    Directory.GetCurrentDirectory(),
-    "App_Data"
-);
-
-
-Directory.CreateDirectory(appDataPath);
-
-
-var dbPath = Path.Combine(
-    appDataPath,
-    "hospital.db"
-);
-
-
-
-// ===============================================
-// Database Logs
+// Logs
 // ===============================================
 
 Console.WriteLine("====================================");
 
 Console.WriteLine(
-    "Environment = " +
-    builder.Environment.EnvironmentName
+    $"Environment = {builder.Environment.EnvironmentName}"
 );
-
 
 Console.WriteLine(
-    "Content Root = " +
-    Directory.GetCurrentDirectory()
+    $"DB Path = {dbPath}"
 );
-
 
 Console.WriteLine(
-    "DB Path = " +
-    dbPath
+    $"DB Exists = {File.Exists(dbPath)}"
 );
-
-
-Console.WriteLine(
-    "DB Exists = " +
-    File.Exists(dbPath)
-);
-
 
 if (File.Exists(dbPath))
 {
     Console.WriteLine(
-        "DB Size = " +
-        new FileInfo(dbPath).Length +
-        " bytes"
+        $"DB Size = {new FileInfo(dbPath).Length}"
     );
 }
 
-
 Console.WriteLine(
-    "PORT = " + port
+    $"PORT = {port}"
 );
 
-
 Console.WriteLine("====================================");
-
-
 
 
 // ===============================================
@@ -137,15 +124,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(
     });
 
 
-
-
-// ===============================================
-// Access Importer
-// ===============================================
-
+// Import
 builder.Services.AddScoped<AccessImporter>();
-
-
 
 
 // ===============================================
@@ -155,10 +135,8 @@ builder.Services.AddScoped<AccessImporter>();
 var app = builder.Build();
 
 
-
-
 // ===============================================
-// Database Check
+// Database Test
 // ===============================================
 
 using (var scope = app.Services.CreateScope())
@@ -170,34 +148,22 @@ using (var scope = app.Services.CreateScope())
             .GetRequiredService<ApplicationDbContext>();
 
 
-        bool connected =
-            db.Database.CanConnect();
-
-
         Console.WriteLine(
-            "Database Connected = " + connected
+            "Database Connected = " +
+            db.Database.CanConnect()
         );
 
 
-        if (connected)
-        {
-            int doctors =
-                db.Doctors.Count();
+        Console.WriteLine(
+            "Doctors Count = " +
+            db.Doctors.Count()
+        );
 
 
-            int training =
-                db.TrainingRotations.Count();
-
-
-            Console.WriteLine(
-                "Doctors Count = " + doctors
-            );
-
-
-            Console.WriteLine(
-                "Training Count = " + training
-            );
-        }
+        Console.WriteLine(
+            "Training Count = " +
+            db.TrainingRotations.Count()
+        );
 
     }
     catch (Exception ex)
@@ -207,7 +173,6 @@ using (var scope = app.Services.CreateScope())
         );
     }
 }
-
 
 
 
@@ -229,23 +194,14 @@ app.UseRouting();
 app.UseAuthorization();
 
 
-
-
 // ===============================================
-// Default Route
+// Route
 // ===============================================
 
 app.MapControllerRoute(
     name: "default",
-    pattern:
-    "{controller=Doctors}/{action=Index}/{id?}"
+    pattern: "{controller=Doctors}/{action=Index}/{id?}"
 );
 
-
-
-
-// ===============================================
-// Run
-// ===============================================
 
 app.Run();
