@@ -1,13 +1,12 @@
 using HospitalWeb.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 
 // ===============================================
-// Empty Builder - Render Safe
+// Render Production Builder
 // ===============================================
 
-var builder = WebApplication.CreateEmptyBuilder(
+var builder = WebApplication.CreateBuilder(
     new WebApplicationOptions
     {
         Args = args,
@@ -17,15 +16,18 @@ var builder = WebApplication.CreateEmptyBuilder(
 
 
 // ===============================================
-// Configuration ָֿזה File Watcher
+// Disable File Watching
 // ===============================================
+
+builder.Configuration.Sources.Clear();
 
 builder.Configuration
     .AddJsonFile(
         "appsettings.json",
         optional: false,
         reloadOnChange: false
-    );
+    )
+    .AddEnvironmentVariables();
 
 
 
@@ -56,27 +58,24 @@ builder.Services.AddControllersWithViews();
 // Database Path
 // ===============================================
 
-string appData =
-    Path.Combine(
-        Directory.GetCurrentDirectory(),
-        "App_Data"
-    );
+var appDataPath = Path.Combine(
+    Directory.GetCurrentDirectory(),
+    "App_Data"
+);
 
 
-Directory.CreateDirectory(appData);
+Directory.CreateDirectory(appDataPath);
 
 
-
-string dbPath =
-    Path.Combine(
-        appData,
-        "hospital.db"
-    );
+var dbPath = Path.Combine(
+    appDataPath,
+    "hospital.db"
+);
 
 
 
 // ===============================================
-// Logs
+// Database Logs
 // ===============================================
 
 Console.WriteLine("====================================");
@@ -86,10 +85,18 @@ Console.WriteLine(
     builder.Environment.EnvironmentName
 );
 
+
+Console.WriteLine(
+    "Content Root = " +
+    Directory.GetCurrentDirectory()
+);
+
+
 Console.WriteLine(
     "DB Path = " +
     dbPath
 );
+
 
 Console.WriteLine(
     "DB Exists = " +
@@ -101,7 +108,8 @@ if (File.Exists(dbPath))
 {
     Console.WriteLine(
         "DB Size = " +
-        new FileInfo(dbPath).Length
+        new FileInfo(dbPath).Length +
+        " bytes"
     );
 }
 
@@ -130,8 +138,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(
 
 
 
+
 // ===============================================
-// Importer
+// Access Importer
 // ===============================================
 
 builder.Services.AddScoped<AccessImporter>();
@@ -149,49 +158,54 @@ var app = builder.Build();
 
 
 // ===============================================
-// Database Test
+// Database Check
 // ===============================================
 
 using (var scope = app.Services.CreateScope())
 {
-
     try
     {
-
         var db =
             scope.ServiceProvider
             .GetRequiredService<ApplicationDbContext>();
 
 
-        Console.WriteLine(
-            "Database Connected = "
-            + db.Database.CanConnect()
-        );
+        bool connected =
+            db.Database.CanConnect();
 
 
         Console.WriteLine(
-            "Doctors Count = "
-            + db.Doctors.Count()
+            "Database Connected = " + connected
         );
 
 
-        Console.WriteLine(
-            "Training Count = "
-            + db.TrainingRotations.Count()
-        );
+        if (connected)
+        {
+            int doctors =
+                db.Doctors.Count();
+
+
+            int training =
+                db.TrainingRotations.Count();
+
+
+            Console.WriteLine(
+                "Doctors Count = " + doctors
+            );
+
+
+            Console.WriteLine(
+                "Training Count = " + training
+            );
+        }
 
     }
-
     catch (Exception ex)
     {
-
         Console.WriteLine(
-            "DATABASE ERROR = "
-            + ex.Message
+            "DATABASE ERROR = " + ex.Message
         );
-
     }
-
 }
 
 
@@ -201,13 +215,11 @@ using (var scope = app.Services.CreateScope())
 // Middleware
 // ===============================================
 
-
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
-
 
 
 app.UseStaticFiles();
@@ -220,7 +232,7 @@ app.UseAuthorization();
 
 
 // ===============================================
-// Route
+// Default Route
 // ===============================================
 
 app.MapControllerRoute(
@@ -230,5 +242,10 @@ app.MapControllerRoute(
 );
 
 
+
+
+// ===============================================
+// Run
+// ===============================================
 
 app.Run();
