@@ -6,13 +6,12 @@ using Microsoft.EntityFrameworkCore;
 // Builder
 // ===============================================
 
-var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
 {
     Args = args,
     EnvironmentName = Environments.Production,
     ContentRootPath = Directory.GetCurrentDirectory()
 });
-
 
 
 // ===============================================
