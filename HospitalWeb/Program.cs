@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 // Builder
 // ===============================================
 
-var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
     Args = args,
     EnvironmentName = Environments.Production,
@@ -27,7 +27,6 @@ builder.Configuration.AddJsonFile(
 );
 
 
-
 // ===============================================
 // Port
 // ===============================================
@@ -42,13 +41,11 @@ builder.WebHost.UseUrls(
 );
 
 
-
 // ===============================================
 // MVC
 // ===============================================
 
 builder.Services.AddControllersWithViews();
-
 
 
 // ===============================================
@@ -69,13 +66,11 @@ string appData =
 Directory.CreateDirectory(appData);
 
 
-
 string dbPath =
     Path.Combine(
         appData,
         "hospital.db"
     );
-
 
 
 // ===============================================
@@ -126,7 +121,6 @@ Console.WriteLine(
 Console.WriteLine("====================================");
 
 
-
 // ===============================================
 // SQLite
 // ===============================================
@@ -140,7 +134,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(
     });
 
 
-
 // ===============================================
 // Import
 // ===============================================
@@ -148,13 +141,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(
 builder.Services.AddScoped<AccessImporter>();
 
 
-
 // ===============================================
 // Build
 // ===============================================
 
 var app = builder.Build();
-
 
 
 // ===============================================
@@ -179,7 +170,6 @@ using (var scope = app.Services.CreateScope())
         );
 
 
-
         int doctorsCount =
             db.Doctors.Count();
 
@@ -189,7 +179,6 @@ using (var scope = app.Services.CreateScope())
         );
 
 
-
         int trainingCount =
             db.TrainingRotations.Count();
 
@@ -197,7 +186,6 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine(
             "Training Count = " + trainingCount
         );
-
 
 
         int departmentsCount =
@@ -218,7 +206,6 @@ using (var scope = app.Services.CreateScope())
 }
 
 
-
 // ===============================================
 // Middleware
 // ===============================================
@@ -232,12 +219,9 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 
-
 app.UseRouting();
 
-
 app.UseAuthorization();
-
 
 
 // ===============================================
@@ -248,7 +232,6 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Doctors}/{action=Index}/{id?}"
 );
-
 
 
 app.Run();
