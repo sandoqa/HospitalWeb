@@ -1,0 +1,44 @@
+﻿@{
+    ViewData["Title"] = "استرجاع نسخة احتياطية";
+}
+
+<h2>📤 استرجاع نسخة احتياطية</h2>
+
+
+@if (ViewBag.Message != null)
+{
+    <div class="alert alert-success">
+        @ViewBag.Message
+    </div>
+}
+
+
+<form asp-action="Restore"
+      method="post"
+      enctype="multipart/form-data">
+
+
+    <div class="mb-3">
+
+        <label>
+            اختر ملف النسخة الاحتياطية:
+        </label>
+
+
+        <input type="file"
+               name="backupFile"
+               class="form-control"
+               accept=".db" />
+
+    </div>
+
+
+    <button type="submit"
+            class="btn btn-danger">
+
+        🔄 استرجاع
+
+    </button>
+
+
+</form>

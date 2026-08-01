@@ -3,16 +3,6 @@ using Microsoft.EntityFrameworkCore;
 
 
 // ===============================================
-// Disable File Watcher for Render BEFORE Builder
-// ===============================================
-
-Environment.SetEnvironmentVariable(
-    "DOTNET_USE_POLLING_FILE_WATCHER",
-    "0"
-);
-
-
-// ===============================================
 // Builder
 // ===============================================
 
@@ -22,6 +12,7 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
     EnvironmentName = Environments.Production,
     ContentRootPath = Directory.GetCurrentDirectory()
 });
+
 
 
 // ===============================================
@@ -37,18 +28,20 @@ builder.Configuration.AddJsonFile(
 );
 
 
+
 // ===============================================
-// Render Port
+// Port
 // ===============================================
 
 var port =
     Environment.GetEnvironmentVariable("PORT")
-    ?? "10000";
+    ?? "5000";
 
 
 builder.WebHost.UseUrls(
     $"http://0.0.0.0:{port}"
 );
+
 
 
 // ===============================================
@@ -58,13 +51,18 @@ builder.WebHost.UseUrls(
 builder.Services.AddControllersWithViews();
 
 
+
 // ===============================================
-// Database
+// Database Location
 // ===============================================
 
-var appData =
+string rootPath =
+    Directory.GetCurrentDirectory();
+
+
+string appData =
     Path.Combine(
-        Directory.GetCurrentDirectory(),
+        rootPath,
         "App_Data"
     );
 
@@ -72,43 +70,62 @@ var appData =
 Directory.CreateDirectory(appData);
 
 
-var dbPath =
+
+string dbPath =
     Path.Combine(
         appData,
         "hospital.db"
     );
 
 
+
 // ===============================================
-// Logs
+// Database Logs
 // ===============================================
 
 Console.WriteLine("====================================");
 
 Console.WriteLine(
-    $"Environment = {builder.Environment.EnvironmentName}"
+    "Environment = " +
+    builder.Environment.EnvironmentName
 );
 
-Console.WriteLine(
-    $"DB Path = {dbPath}"
-);
 
 Console.WriteLine(
-    $"DB Exists = {File.Exists(dbPath)}"
+    "Content Root = " +
+    rootPath
 );
+
+
+Console.WriteLine(
+    "Database Path = " +
+    dbPath
+);
+
+
+Console.WriteLine(
+    "Database Exists = " +
+    File.Exists(dbPath)
+);
+
 
 if (File.Exists(dbPath))
 {
     Console.WriteLine(
-        $"DB Size = {new FileInfo(dbPath).Length}"
+        "Database Size = " +
+        new FileInfo(dbPath).Length +
+        " bytes"
     );
 }
 
+
 Console.WriteLine(
-    $"PORT = {port}"
+    "PORT = " + port
 );
 
+
 Console.WriteLine("====================================");
+
 
 
 // ===============================================
@@ -124,8 +141,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(
     });
 
 
+
+// ===============================================
 // Import
+// ===============================================
+
 builder.Services.AddScoped<AccessImporter>();
+
 
 
 // ===============================================
@@ -135,8 +157,9 @@ builder.Services.AddScoped<AccessImporter>();
 var app = builder.Build();
 
 
+
 // ===============================================
-// Database Test
+// Test Database
 // ===============================================
 
 using (var scope = app.Services.CreateScope())
@@ -148,21 +171,42 @@ using (var scope = app.Services.CreateScope())
             .GetRequiredService<ApplicationDbContext>();
 
 
+        bool connected =
+            db.Database.CanConnect();
+
+
         Console.WriteLine(
-            "Database Connected = " +
-            db.Database.CanConnect()
+            "Database Connected = " + connected
         );
 
 
+
+        int doctorsCount =
+            db.Doctors.Count();
+
+
         Console.WriteLine(
-            "Doctors Count = " +
-            db.Doctors.Count()
+            "Doctors Count = " + doctorsCount
         );
 
 
+
+        int trainingCount =
+            db.TrainingRotations.Count();
+
+
         Console.WriteLine(
-            "Training Count = " +
-            db.TrainingRotations.Count()
+            "Training Count = " + trainingCount
+        );
+
+
+
+        int departmentsCount =
+            db.Departments.Count();
+
+
+        Console.WriteLine(
+            "Departments Count = " + departmentsCount
         );
 
     }
@@ -189,19 +233,23 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 
+
 app.UseRouting();
+
 
 app.UseAuthorization();
 
 
+
 // ===============================================
-// Route
+// Default Route
 // ===============================================
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Doctors}/{action=Index}/{id?}"
 );
+
 
 
 app.Run();

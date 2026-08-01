@@ -71,6 +71,12 @@
         <a asp-action="Create"
            class="btn btn-success mb-2">
             + إضافة طبيب
+                <a asp-controller="Backup"
+                   asp-action="Download"
+                   class="btn btn-success">
+                    📥 تحميل نسخة احتياطية
+                </a>
+
         </a>
 
 
@@ -138,7 +144,7 @@
                         5 => "green-blink",
                         _ => ""
                     };
-
+                   
 
     <tr class="@alertClass doctor-item"
         data-name="@item.الاسم.ToLower()"

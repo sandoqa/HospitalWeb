@@ -73,7 +73,9 @@ namespace HospitalWeb.Controllers
 
                 int days = GetWarningDays(doctor);
 
-
+                Console.WriteLine(
+    doctor.الاسم + " باقي " + days + " يوم"
+);
                 if (days >= 1 && days <= 5)
                 {
                     warningDays[doctor.Id] = days;
@@ -108,20 +110,13 @@ namespace HospitalWeb.Controllers
 
 
 
-        // =========================
-        // حساب الأيام المتبقية
-        // =========================
-
         private int GetWarningDays(Doctor doctor)
         {
-
             if (doctor.TrainingRotations == null ||
                 doctor.TrainingRotations.Count == 0)
             {
                 return -1;
             }
-
-
 
 
             var currentRotation =
@@ -133,29 +128,13 @@ namespace HospitalWeb.Controllers
                 .FirstOrDefault();
 
 
-
             if (currentRotation == null)
                 return -1;
-
-
-
-            bool hasNextRotation =
-                doctor.TrainingRotations.Any(x =>
-                    x.StartDate.Date >
-                    currentRotation.EndDate.Date);
-
-
-
-            if (hasNextRotation)
-                return -1;
-
-
 
 
             int remainingDays =
                 (currentRotation.EndDate.Date -
                  DateTime.Today).Days;
-
 
 
             if (remainingDays >= 1 &&
@@ -165,11 +144,8 @@ namespace HospitalWeb.Controllers
             }
 
 
-
             return -1;
-
         }
-
 
 
 
@@ -206,11 +182,14 @@ namespace HospitalWeb.Controllers
         // إضافة طبيب
         // =========================
 
+        // =========================
+        // إضافة طبيب
+        // =========================
+
         public IActionResult Create()
         {
             return View();
         }
-
 
 
 
@@ -221,35 +200,54 @@ namespace HospitalWeb.Controllers
             IFormFile? imageFile)
         {
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+            {
+                return View(doctor);
+            }
+
+
+            try
             {
 
-                if (imageFile != null)
+                // حفظ صورة الطبيب إذا وجدت
+                if (imageFile != null && imageFile.Length > 0)
                 {
-                    doctor.ImagePath =
-                        await SaveImage(imageFile);
+                    doctor.ImagePath = await SaveImage(imageFile);
                 }
 
 
-
+                // إضافة الطبيب إلى قاعدة البيانات
                 _context.Doctors.Add(doctor);
 
                 await _context.SaveChangesAsync();
 
 
+                Console.WriteLine(
+                    "Doctor Added ID = " + doctor.Id
+                );
+
+
                 return RedirectToAction(nameof(Index));
+
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(
+                    "CREATE DOCTOR ERROR = " + ex.Message
+                );
+
+
+                ModelState.AddModelError(
+                    "",
+                    "حدث خطأ أثناء إضافة الطبيب: " + ex.Message
+                );
+
+
+                return View(doctor);
             }
 
-
-
-            return View(doctor);
-
         }
-
-
-
-
-
 
         // =========================
         // تعديل بيانات الطبيب
