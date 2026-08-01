@@ -56,13 +56,33 @@ Console.WriteLine(
     "DB Path      = " +
     dbPath
 );
+Console.WriteLine("DB Full Path = " + Path.GetFullPath(dbPath));
 
+Console.WriteLine("Current Directory = " + Directory.GetCurrentDirectory());
+
+Console.WriteLine("App_Data Exists = " +
+    File.Exists(Path.Combine(
+        Directory.GetCurrentDirectory(),
+        "App_Data",
+        "hospital.db")));
 
 Console.WriteLine(
     "DB Exists    = " +
     File.Exists(dbPath)
 );
 
+
+// Õ›Ÿ „⁄·Ê„«  ﬁ«⁄œ… «·»Ì«‰«  ›Ì „·› „ƒﬁ 
+File.WriteAllText(
+    Path.Combine(
+        Directory.GetCurrentDirectory(),
+        "db_info.txt"
+    ),
+    $"DB Path = {dbPath}\n" +
+    $"DB Exists = {File.Exists(dbPath)}\n" +
+    $"DB Size = {(File.Exists(dbPath) ? new FileInfo(dbPath).Length : 0)} bytes\n" +
+    $"Doctors Count = {(File.Exists(dbPath) ? "Check after connection" : "No DB")}"
+);
 
 
 if (File.Exists(dbPath))
@@ -119,48 +139,52 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    try
+    var db =
+        scope.ServiceProvider
+        .GetRequiredService<ApplicationDbContext>();
+
+
+    bool connected =
+        db.Database.CanConnect();
+
+
+    Console.WriteLine(
+        "Database Connected = " +
+        connected
+    );
+
+
+    if (connected)
     {
-        var db =
-            scope.ServiceProvider
-            .GetRequiredService<ApplicationDbContext>();
+        int doctorsCount = db.Doctors.Count();
 
-
-        bool connected =
-            db.Database.CanConnect();
+        int trainingCount = db.TrainingRotations.Count();
 
 
         Console.WriteLine(
-            "Database Connected = " +
-            connected
+            "Doctors Count = " +
+            doctorsCount
         );
 
 
-        if (connected)
-        {
-            Console.WriteLine(
-                "Doctors Count = " +
-                db.Doctors.Count()
-            );
-
-
-            Console.WriteLine(
-                "Training Count = " +
-                db.TrainingRotations.Count()
-            );
-        }
-
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine("DATABASE ERROR");
-
         Console.WriteLine(
-            ex.ToString()
+            "Training Count = " +
+            trainingCount
+        );
+
+
+        File.WriteAllText(
+            Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "db_result.txt"
+            ),
+            "DB Path = " + dbPath + Environment.NewLine +
+            "DB Size = " + new FileInfo(dbPath).Length + Environment.NewLine +
+            "Doctors Count = " + doctorsCount + Environment.NewLine +
+            "Training Count = " + trainingCount
         );
     }
 }
-
 
 
 
