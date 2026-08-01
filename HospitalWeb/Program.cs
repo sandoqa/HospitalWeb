@@ -1,5 +1,6 @@
-using Microsoft.EntityFrameworkCore;
 using HospitalWeb.Data;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +20,7 @@ builder.Services.AddControllersWithViews();
 string dbPath = Path.Combine(
     Directory.GetCurrentDirectory(),
     "App_Data",
-    "hospital.db"
+    "hospital_backup_447.db"
 );
 
 
@@ -130,7 +131,12 @@ builder.Services.AddScoped<AccessImporter>();
 var app = builder.Build();
 
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
+    Console.WriteLine("Current DB Doctors = " + db.Doctors.Count());
+}
 
 
 // ==================================================
@@ -238,6 +244,60 @@ app.MapControllerRoute(
     "{controller=Doctors}/{action=Index}/{id?}"
 );
 
+
+// ===============================================
+// ›Õ’ ﬁÊ«⁄œ «Õ Ì«ÿÌ… (··„ﬁ«—‰… ›ﬁÿ)
+// ===============================================
+
+void CheckBackupDatabase(string path, string name)
+{
+    try
+    {
+        if (!File.Exists(path))
+        {
+            Console.WriteLine(name + " not found");
+            return;
+        }
+
+
+        using (var conn = new SqliteConnection($"Data Source={path}"))
+        {
+            conn.Open();
+
+            var cmd = conn.CreateCommand();
+
+            cmd.CommandText = "SELECT COUNT(*) FROM Doctors";
+
+
+            var count = cmd.ExecuteScalar();
+
+
+            Console.WriteLine(
+                name + " Doctors = " + count
+            );
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(
+            name + " ERROR = " + ex.Message
+        );
+    }
+}
+
+
+
+// ›Õ’ «·„·›«  «·ﬁœÌ„…
+CheckBackupDatabase(
+    @"C:\Users\Mahmoud\Desktop\m12\HospitalWeb\old_correct_hospital.db",
+    "old_correct_hospital"
+);
+
+
+CheckBackupDatabase(
+    @"C:\Users\Mahmoud\Desktop\m12\HospitalWeb\old_initial_hospital.db",
+    "old_initial_hospital"
+);
 
 
 app.Run();
