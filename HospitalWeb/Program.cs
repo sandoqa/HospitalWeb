@@ -2,7 +2,17 @@ using HospitalWeb.Data;
 using Microsoft.EntityFrameworkCore;
 
 
-// Render inotify fix
+// =====================================
+// Render inotify Fix
+// =====================================
+
+Environment.SetEnvironmentVariable(
+    "DOTNET_USE_POLLING_FILE_WATCHER",
+    "true"
+);
+
+
+
 var options = new WebApplicationOptions
 {
     Args = args,
@@ -11,10 +21,15 @@ var options = new WebApplicationOptions
 };
 
 
-var builder = WebApplication.CreateSlimBuilder(options);
+
+var builder = WebApplication.CreateBuilder(options);
 
 
-//  ⁄ÿÌ· File Watcher ·„‰⁄ Œÿ√ Render inotify
+
+// =====================================
+// Disable Configuration File Watching
+// =====================================
+
 builder.Configuration.Sources.Clear();
 
 builder.Configuration.AddJsonFile(
@@ -25,8 +40,12 @@ builder.Configuration.AddJsonFile(
 
 
 
-// PORT «·Œ«’ »‹ Render
+// =====================================
+// Render PORT
+// =====================================
+
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+
 
 builder.WebHost.UseUrls(
     $"http://0.0.0.0:{port}"
@@ -34,37 +53,71 @@ builder.WebHost.UseUrls(
 
 
 
+// =====================================
 // MVC
+// =====================================
+
 builder.Services.AddControllersWithViews();
 
 
 
-// ﬁ«⁄œ… «·»Ì«‰« 
+// =====================================
+// SQLite Database
+// =====================================
 
 string rootPath = Directory.GetCurrentDirectory();
 
-string appData = Path.Combine(
+
+string appDataPath = Path.Combine(
     rootPath,
     "App_Data"
 );
 
-Directory.CreateDirectory(appData);
+
+
+if (!Directory.Exists(appDataPath))
+{
+    Directory.CreateDirectory(appDataPath);
+}
+
 
 
 string dbPath = Path.Combine(
-    appData,
+    appDataPath,
     "hospital.db"
 );
 
 
 
+// =====================================
 // Logs
+// =====================================
 
 Console.WriteLine("====================================");
-Console.WriteLine("Environment = " + builder.Environment.EnvironmentName);
-Console.WriteLine("Content Root = " + rootPath);
-Console.WriteLine("Database Path = " + dbPath);
-Console.WriteLine("Database Exists = " + File.Exists(dbPath));
+
+Console.WriteLine(
+    "Environment = " +
+    builder.Environment.EnvironmentName
+);
+
+
+Console.WriteLine(
+    "Content Root = " +
+    rootPath
+);
+
+
+Console.WriteLine(
+    "Database Path = " +
+    dbPath
+);
+
+
+Console.WriteLine(
+    "Database Exists = " +
+    File.Exists(dbPath)
+);
+
 
 
 if (File.Exists(dbPath))
@@ -77,13 +130,20 @@ if (File.Exists(dbPath))
 }
 
 
-Console.WriteLine("PORT = " + port);
+
+Console.WriteLine(
+    "PORT = " +
+    port
+);
+
+
 Console.WriteLine("====================================");
 
 
 
-
-// SQLite
+// =====================================
+// Entity Framework SQLite
+// =====================================
 
 builder.Services.AddDbContext<ApplicationDbContext>(
     options =>
@@ -96,28 +156,34 @@ builder.Services.AddDbContext<ApplicationDbContext>(
 
 
 
-// Import Access
+// =====================================
+// Access Importer
+// =====================================
 
 builder.Services.AddScoped<AccessImporter>();
 
 
 
-
+// =====================================
 // Build
+// =====================================
 
 var app = builder.Build();
 
 
 
-
-// «Œ »«— ﬁ«⁄œ… «·»Ì«‰« 
+// =====================================
+// Database Test
+// =====================================
 
 using (var scope = app.Services.CreateScope())
 {
     try
     {
+
         var db = scope.ServiceProvider
             .GetRequiredService<ApplicationDbContext>();
+
 
 
         Console.WriteLine(
@@ -126,16 +192,19 @@ using (var scope = app.Services.CreateScope())
         );
 
 
+
         Console.WriteLine(
             "Doctors Count = " +
             db.Doctors.Count()
         );
 
 
+
         Console.WriteLine(
             "Training Count = " +
             db.TrainingRotations.Count()
         );
+
 
 
         Console.WriteLine(
@@ -146,33 +215,49 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
+
         Console.WriteLine(
-            "DATABASE ERROR = " + ex.Message
+            "DATABASE ERROR = " +
+            ex
         );
+
     }
 }
 
 
 
-
+// =====================================
 // Production Error Handling
+// =====================================
 
 if (!app.Environment.IsDevelopment())
 {
+
     app.UseExceptionHandler("/Home/Error");
+
     app.UseHsts();
+
 }
 
 
 
+// =====================================
+// Middleware
+// =====================================
+
 app.UseStaticFiles();
 
+
 app.UseRouting();
+
 
 app.UseAuthorization();
 
 
 
+// =====================================
+// Default Route
+// =====================================
 
 app.MapControllerRoute(
     name: "default",
