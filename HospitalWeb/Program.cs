@@ -1,7 +1,8 @@
 using HospitalWeb.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Hosting;
-// Render inotify fix applied
+
+
+// Render inotify fix
 var options = new WebApplicationOptions
 {
     Args = args,
@@ -10,18 +11,17 @@ var options = new WebApplicationOptions
 };
 
 
-var builder = WebApplication.CreateBuilder(options);
+var builder = WebApplication.CreateSlimBuilder(options);
 
 
 //  ⁄ÿÌ· File Watcher ·„‰⁄ Œÿ√ Render inotify
 builder.Configuration.Sources.Clear();
 
-builder.Configuration
-    .AddJsonFile(
-        "appsettings.json",
-        optional: false,
-        reloadOnChange: false
-    );
+builder.Configuration.AddJsonFile(
+    "appsettings.json",
+    optional: false,
+    reloadOnChange: false
+);
 
 
 
@@ -43,7 +43,10 @@ builder.Services.AddControllersWithViews();
 
 string rootPath = Directory.GetCurrentDirectory();
 
-string appData = Path.Combine(rootPath, "App_Data");
+string appData = Path.Combine(
+    rootPath,
+    "App_Data"
+);
 
 Directory.CreateDirectory(appData);
 
@@ -79,6 +82,7 @@ Console.WriteLine("====================================");
 
 
 
+
 // SQLite
 
 builder.Services.AddDbContext<ApplicationDbContext>(
@@ -92,7 +96,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(
 
 
 
-// Import
+// Import Access
+
 builder.Services.AddScoped<AccessImporter>();
 
 
@@ -150,6 +155,8 @@ using (var scope = app.Services.CreateScope())
 
 
 
+// Production Error Handling
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -163,6 +170,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+
 
 
 
