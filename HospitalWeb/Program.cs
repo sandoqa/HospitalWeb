@@ -1,7 +1,7 @@
 using HospitalWeb.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
-
+// Render inotify fix applied
 var options = new WebApplicationOptions
 {
     Args = args,
