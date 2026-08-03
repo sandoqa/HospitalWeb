@@ -233,7 +233,7 @@
                 ➕ إضافة طبيب
 
             </a>
-
+            
 
             <a asp-controller="Backup"
                asp-action="Download"
@@ -242,7 +242,15 @@
                 📥 نسخة احتياطية
 
             </a>
+            <button id="voiceButton"
+                    class="btn btn-danger m-1">
+                🎤 أمر صوتي
+            </button>
 
+            <div id="voiceResult"
+                 class="alert alert-info text-center mt-2"
+                 style="display:none;">
+            </div>
 
             <a asp-controller="Import"
                asp-action="Access"
@@ -830,10 +838,648 @@
 
 
         });
+        // =======================
+        // الأوامر الصوتية
+        // =======================
+
+        const voiceButton =
+            document.getElementById("voiceButton");
+            console.log("زر الصوت:", voiceButton);
+                    console.log(voiceButton);
+        const voiceResult =
+            document.getElementById("voiceResult");
+
+
+        // =======================
+        // دالة النطق
+        // =======================
+
+        function speak(message)
+        {
+            voiceResult.style.display = "block";
+
+            voiceResult.innerHTML = message;
+
+
+            let speech =
+            new SpeechSynthesisUtterance(message);
+
+
+            speech.lang = "ar-JO";
+
+
+            window.speechSynthesis.speak(speech);
+        }
 
 
 
+
+        if (voiceButton && voiceResult)
+        {
+
+            const SpeechRecognition =
+                window.SpeechRecognition ||
+                window.webkitSpeechRecognition;
+
+
+
+            if (SpeechRecognition)
+            {
+
+
+                const recognition =
+                new SpeechRecognition();
+
+
+
+                recognition.lang = "ar-JO";
+
+                recognition.continuous = false;
+
+                recognition.interimResults = false;
+
+
+
+
+                voiceButton.onclick = function()
+                {
+
+
+                    voiceResult.style.display = "block";
+
+
+                    voiceResult.innerHTML =
+                    "🎤 استمع الآن...";
+
+
+                    recognition.start();
+
+
+                };
+
+
+
+
+
+                recognition.onresult = function(event)
+                {
+
+
+                    let text =
+                    event.results[0][0].transcript
+                    .trim()
+                    .replace(/[.,،.]/g,"");
+
+
+
+                    voiceResult.innerHTML =
+                    "قلت: " + text;
+
+
+
+
+                    // =======================
+                    // عدد الأطباء
+                    // =======================
+
+
+                    if(
+                    text.includes("كم عدد الأطباء") ||
+                    text.includes("عدد الأطباء"))
+                    {
+
+
+                        let count =
+                        document.querySelectorAll(".doctor-item").length;
+
+
+
+                        speak(
+                        "عدد الأطباء هو " + count
+                        );
+
+
+                        return;
+
+                    }
+
+
+
+
+
+                    // =======================
+                    // عدد الأقسام
+                    // =======================
+
+        else if(
+        text.includes("كم عدد الأقسام") ||
+        text.includes("عدد الأقسام"))
+        {
+
+
+           let count = 0;
+
+
+
+            speak(
+            "عدد الأقسام هو " + count
+            );
+
+
+            return;
+
+        }
+
+
+
+
+
+                            // =======================
+        // كم طبيب في قسم
+        // =======================
+
+        else if(
+            text.includes("كم طبيب في") ||
+            text.includes("كم عدد الأطباء في") ||
+            text.includes("عدد أطباء")
+        )
+        {
+
+            let department="";
+
+
+            if(text.includes("الجراحة"))
+                department="الجراحة";
+
+            else if(text.includes("الباطني"))
+                department="الباطني";
+
+            else if(text.includes("الأطفال"))
+                department="الأطفال";
+
+            else if(text.includes("النسائية") || text.includes("نساء"))
+                department="النسائية";
+
+            else if(text.includes("الاختياري"))
+                department="الاختياري";
+
+            else if(text.includes("الطوارئ"))
+                department="الطوارئ";
+
+
+
+            if(department!="")
+            {
+
+
+                let index =
+                departmentLabels.indexOf(department);
+
+
+
+                if(index !== -1)
+                {
+
+                    let count =
+                    departmentCounts[index];
+
+
+                    speak(
+                    "عدد أطباء قسم "
+                    + department
+                    + " هو "
+                    + count
+                    );
+
+
+                }
+                else
+                {
+
+                    speak(
+                    "لم أجد هذا القسم"
+                    );
+
+                }
+
+
+            }
+            else
+            {
+
+                speak(
+                "اذكر اسم القسم"
+                );
+
+            }
+
+
+            return;
+
+        }
+
+
+
+                    // =======================
+                    // الأطباء القريب انتهاء تدريبهم
+                    // =======================
+
+
+                    else if(
+                    text.includes("ينتهي تدريبه") ||
+                    text.includes("قريب انتهاء التدريب"))
+                    {
+
+
+                        let names=[];
+
+
+
+                        document
+                        .querySelectorAll(".doctor-item")
+                        .forEach(function(item)
+                        {
+
+
+                            let alert =
+                            item.querySelector(".badge.bg-danger");
+
+
+
+                            if(alert)
+                            {
+
+                                names.push(
+                                item.querySelector("td:nth-child(2)").innerText
+                                );
+
+                            }
+
+
+                        });
+
+
+
+
+                        if(names.length>0)
+                        {
+
+                            speak(
+                            "الأطباء القريب انتهاء تدريبهم: "
+                            + names.join(" ، ")
+                            );
+
+
+                        }
+                        else
+                        {
+
+                            speak(
+                            "لا يوجد أطباء قريب انتهاء تدريبهم"
+                            );
+
+                        }
+
+
+
+                        return;
+
+
+                    }
+                    // =======================
+                    // البحث باسم الطبيب
+                    // =======================
+
+                    else if(text.includes("ابحث"))
+                    {
+
+                        let name =
+                        text.replace("ابحث عن","")
+                        .replace("ابحث","")
+                        .trim();
+
+
+                        document.getElementById("doctorSearch").value = name;
+
+
+                        document.getElementById("doctorSearch")
+                        .dispatchEvent(new Event("input"));
+
+
+                        return;
+
+                    }
+
+
+
+
+                    // =======================
+                    // فتح ملف الطبيب بالصوت
+                    // مثال: افتح ملف الطبيب أحمد
+                    // =======================
+
+
+                    else if(text.includes("افتح ملف الطبيب"))
+                    {
+
+
+                        let doctorName =
+                        text.replace("افتح ملف الطبيب","")
+                        .trim();
+
+
+
+                        let found=false;
+
+
+
+                        document.querySelectorAll(".doctor-item")
+                        .forEach(function(item)
+                        {
+
+
+                            let name =
+                            item.dataset.name || "";
+
+
+
+                            if(name.includes(doctorName.toLowerCase()))
+                            {
+
+
+                                let detailsButton =
+                                item.querySelector('a[href*="Details"]');
+
+
+
+                                if(detailsButton)
+                                {
+
+                                    window.location.href =
+                                    detailsButton.href;
+
+
+                                    found=true;
+
+                                }
+
+
+                            }
+
+
+                        });
+
+
+
+
+                        if(!found)
+                        {
+
+                            speak(
+                            "لم أجد الطبيب " + doctorName
+                            );
+
+                        }
+
+
+                        return;
+
+
+                    }
+
+
+
+
+
+                    // =======================
+                    // مسح البحث
+                    // =======================
+
+
+                    else if(text.includes("مسح البحث"))
+                    {
+
+                        document
+                        .getElementById("clearSearch")
+                        .click();
+
+
+                        return;
+
+                    }
+
+
+
+
+
+                    // =======================
+                    // الانتقال للأقسام
+                    // =======================
+
+
+                    else if(text.includes("الجراحة"))
+                    {
+
+                        window.location.href =
+                        "/Doctors/DepartmentDoctors?name="
+                        + encodeURIComponent("الجراحة");
+
+
+                    }
+
+
+
+                    else if(text.includes("الأطفال"))
+                    {
+
+                        window.location.href =
+                        "/Doctors/DepartmentDoctors?name="
+                        + encodeURIComponent("الأطفال");
+
+
+                    }
+
+
+
+                    else if(text.includes("النسائية") ||
+                            text.includes("نساء"))
+                    {
+
+                        window.location.href =
+                        "/Doctors/DepartmentDoctors?name="
+                        + encodeURIComponent("النسائية");
+
+
+                    }
+
+
+
+
+                    else if(text.includes("الباطني") ||
+                            text.includes("باطنة"))
+                    {
+
+                        window.location.href =
+                        "/Doctors/DepartmentDoctors?name="
+                        + encodeURIComponent("الباطني");
+
+
+                    }
+
+
+
+
+                    else if(text.includes("الطوارئ") ||
+                            text.includes("طوارئ"))
+                    {
+
+                        window.location.href =
+                        "/Doctors/DepartmentDoctors?name="
+                        + encodeURIComponent("الطوارئ");
+
+
+                    }
+
+
+
+
+                    else if(text.includes("التخدير"))
+                    {
+
+                        window.location.href =
+                        "/Doctors/DepartmentDoctors?name="
+                        + encodeURIComponent("التخدير");
+
+
+                    }
+
+
+
+
+                    else if(text.includes("العيون"))
+                    {
+
+                        window.location.href =
+                        "/Doctors/DepartmentDoctors?name="
+                        + encodeURIComponent("العيون");
+
+
+                    }
+
+
+
+
+                    else if(text.includes("الأذن") ||
+                            text.includes("الأنف"))
+                    {
+
+                        window.location.href =
+                        "/Doctors/DepartmentDoctors?name="
+                        + encodeURIComponent("الأنف والأذن");
+
+
+                    }
+
+
+
+
+                    // =======================
+                    // أوامر الصفحات
+                    // =======================
+
+
+                    else if(text.includes("إضافة طبيب") ||
+                            text.includes("اضافة طبيب"))
+                    {
+
+                        window.location.href =
+                        "/Doctors/Create";
+
+
+                    }
+
+
+
+                    else if(text.includes("نسخة احتياطية") ||
+                            text.includes("نسخة"))
+                    {
+
+                        window.location.href =
+                        "/Backup/Download";
+
+
+                    }
+
+
+
+
+                    else if(text.includes("استيراد") ||
+                            text.includes("أكسس"))
+                    {
+
+                        window.location.href =
+                        "/Import/Access";
+
+
+                    }
+
+
+
+
+                    else if(text.includes("الرئيسية"))
+                    {
+
+                        window.location.href =
+                        "/";
+
+
+                    }
+
+
+
+
+                    else
+                    {
+
+                        speak("لم أفهم الأمر");
+
+                    }
+
+
+
+                };
+
+
+
+
+
+                recognition.onerror = function()
+                {
+
+                    voiceResult.innerHTML =
+                    "لم يتم التعرف على الصوت";
+
+                };
+
+
+
+            }
+
+            else
+            {
+
+                voiceButton.disabled=true;
+
+
+                voiceResult.innerHTML =
+                "المتصفح لا يدعم الأوامر الصوتية";
+
+            }
+
+
+        }
     </script>
 
 
+    </main>
 </div>
