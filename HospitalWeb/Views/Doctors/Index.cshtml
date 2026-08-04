@@ -485,10 +485,8 @@
 
 
 
-                        <td>
-
-
-                            <div class="d-flex flex-wrap justify-content-center gap-1">
+                        <td class="actions-column">
+                            <div class="d-flex justify-content-center gap-1 action-buttons">
 
 
                                 <a asp-action="Details"
@@ -571,20 +569,15 @@
     </div>
     <style>
 
-
         body {
             overflow-x: hidden;
         }
-
-
 
         .hospital-logo {
             width: 190px !important;
             height: 190px !important;
             object-fit: contain;
         }
-
-
 
         .personal-logo {
             width: 95px;
@@ -593,20 +586,10 @@
             border-radius: 50%;
         }
 
-
-
         .stat-card {
             border-radius: 20px;
             transition: .3s;
         }
-
-
-
-            .stat-card:hover {
-                transform: translateY(-5px);
-            }
-
-
 
         .doctor-img {
             width: 45px;
@@ -616,6 +599,36 @@
         }
 
 
+        /* عرض الكمبيوتر على الهاتف */
+        @@media(max-width:768px) {
+            .table-responsive
+
+        {
+            overflow-x: auto;
+        }
+
+        .table {
+            min-width: 1200px;
+            font-size: 14px;
+        }
+
+        .actions-column {
+            min-width: 350px;
+        }
+
+        .action-buttons {
+            flex-wrap: nowrap !important;
+            white-space: nowrap;
+        }
+
+            .action-buttons .btn {
+                flex-shrink: 0;
+                font-size: 12px;
+                padding: 4px 8px;
+            }
+
+        }
+    </style>
 
         /* =========================
            الطبيب في الروتيشن السادس
