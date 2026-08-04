@@ -1612,4 +1612,45 @@
 
 
         }
+                // =======================
+        // البحث المباشر
+        // =======================
+
+        const doctorSearch = document.getElementById("doctorSearch");
+        const resultCount = document.getElementById("resultCount");
+
+        doctorSearch.addEventListener("input", function () {
+
+            let value = this.value.toLowerCase().trim();
+            let visible = 0;
+
+            document.querySelectorAll(".doctor-item").forEach(function (row) {
+
+                let name = (row.dataset.name || "").toLowerCase();
+                let phone = (row.dataset.phone || "").toLowerCase();
+                let number = (row.dataset.number || "").toLowerCase();
+
+                if (
+                    name.includes(value) ||
+                    phone.includes(value) ||
+                    number.includes(value)
+                ) {
+                    row.style.display = "";
+                    visible++;
+                } else {
+                    row.style.display = "none";
+                }
+
+            });
+
+            resultCount.innerText = visible;
+
+        });
+
+        document.getElementById("clearSearch").addEventListener("click", function () {
+
+            doctorSearch.value = "";
+            doctorSearch.dispatchEvent(new Event("input"));
+
+        });
     </script>
