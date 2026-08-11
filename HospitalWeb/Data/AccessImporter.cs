@@ -6,20 +6,16 @@ namespace HospitalWeb.Data
 {
     public class AccessImporter
     {
-
         private readonly ApplicationDbContext _context;
 
-
         private readonly string accessPath =
-            @"C:\Users\My PC2\Desktop\New folder (8)\Database4.mdb";
-
+            @"C:\Database\Database4.mdb";
 
 
         public AccessImporter(ApplicationDbContext context)
         {
             _context = context;
         }
-
 
 
 
@@ -30,21 +26,20 @@ namespace HospitalWeb.Data
                 return "ملف Access غير موجود";
 
 
-
             string connectionString =
                 $@"Provider=Microsoft.ACE.OLEDB.12.0;
                 Data Source={accessPath};
                 Mode=Read;";
 
 
-
-            int newDoctors = 0;
-            int oldDoctors = 0;
-            int newRotations = 0;
+            int addedDoctors = 0;
+            int updatedDoctors = 0;
+            int deletedDoctors = 0;
+            int rotationsAdded = 0;
             int errors = 0;
 
 
-            List<string> errorDetails = new();
+            List<string> accessNumbers = new();
 
 
 
@@ -59,80 +54,153 @@ namespace HospitalWeb.Data
 
 
 
-                using var command =
+                // قراءة أرقام الأطباء من Access
+
+                using (var readCommand =
+                    new OleDbCommand(
+                        "SELECT [الرقم] FROM [Sheet1]",
+                        connection))
+                {
+
+                    using var numberReader =
+                        readCommand.ExecuteReader();
+
+
+                    while (numberReader.Read())
+                    {
+
+                        string? number =
+                            numberReader[0]?.ToString();
+
+
+                        if (!string.IsNullOrWhiteSpace(number))
+                        {
+
+                            string cleanNumber =
+                                number.Trim();
+
+
+                            if (!accessNumbers.Contains(cleanNumber))
+                            {
+                                accessNumbers.Add(cleanNumber);
+                            }
+
+                        }
+
+                    }
+
+                }
+
+
+
+                Console.WriteLine(
+                    "عدد أرقام Access الفريدة: "
+                    + accessNumbers.Count);
+
+
+
+                // أرقام موجودة في قاعدة البرنامج
+
+                var programNumbers =
+                    await _context.Doctors
+                    .Where(x => x.رقم_الطبيب != null)
+                    .Select(x => x.رقم_الطبيب!)
+                    .ToListAsync();
+
+
+
+                programNumbers =
+                    programNumbers
+                    .Select(x => x.Trim())
+                    .ToList();
+
+
+
+                // مقارنة Access مع البرنامج
+
+                var accessOnlyDoctors =
+                    accessNumbers
+                    .Where(x => !programNumbers.Contains(x))
+                    .ToList();
+
+
+
+                Console.WriteLine(
+                    "الأطباء الموجودون في Access فقط: "
+                    + accessOnlyDoctors.Count);
+
+
+
+                foreach (var n in accessOnlyDoctors)
+                {
+                    Console.WriteLine(
+                        "رقم موجود في Access فقط: "
+                        + n);
+                }
+
+
+
+                // عدد الأطباء في البرنامج
+
+                Console.WriteLine(
+                    "عدد الأطباء في البرنامج قبل الاستيراد: "
+                    + programNumbers.Count);
+                // قراءة بيانات الأطباء وتحديثها أو إضافتها
+
+                using var dataCommand =
                     new OleDbCommand(
                         "SELECT * FROM [Sheet1]",
                         connection);
 
 
 
-                using var reader =
-                    command.ExecuteReader();
+                using var dataReader =
+                    dataCommand.ExecuteReader();
 
 
 
-                while (reader.Read())
+                while (dataReader.Read())
                 {
 
                     try
                     {
 
+                        string? number =
+                            ReadString(
+                                dataReader,
+                                "الرقم");
+
+
                         string? name =
-                            ReadFirstString(
-                                reader,
-                                "الاسم",
-                                "اسم الطبيب");
+                            ReadString(
+                                dataReader,
+                                "الاسم");
 
 
 
-                        if (string.IsNullOrWhiteSpace(name))
+                        if (string.IsNullOrWhiteSpace(number) ||
+    string.IsNullOrWhiteSpace(name))
+                        {
+                            Console.WriteLine(
+                                "تم تجاهل سجل ناقص - الرقم: "
+                                + number
+                                + " الاسم: "
+                                + name);
+
                             continue;
+                        }
 
 
+
+                        number = number.Trim();
                         name = name.Trim();
 
 
 
-                        string? doctorNumber =
-                            ReadFirstString(
-                                reader,
-                                "رقم_الطبيب",
-                                "رقم الطبيب");
-
-
-
-                        doctorNumber =
-                            doctorNumber?.Trim();
-
-
-
-
-
-                        Doctor? doctor = null;
-
-
-
-                        // البحث برقم الطبيب
-                        if (!string.IsNullOrWhiteSpace(doctorNumber))
-                        {
-                            doctor =
-                                await _context.Doctors
-                                .FirstOrDefaultAsync(x =>
-                                    x.رقم_الطبيب == doctorNumber);
-                        }
-
-
-
-                        // البحث بالاسم إذا لم يجد الرقم
-                        if (doctor == null)
-                        {
-                            doctor =
-                                await _context.Doctors
-                                .FirstOrDefaultAsync(x =>
-                                    x.الاسم == name);
-                        }
-
-
+                        Doctor? doctor =
+                            await _context.Doctors
+                            .FirstOrDefaultAsync(x =>
+                                x.رقم_الطبيب == number);
 
 
 
@@ -144,18 +212,21 @@ namespace HospitalWeb.Data
 
                                 الاسم = name,
 
-                                رقم_الطبيب = doctorNumber,
+                                رقم_الطبيب = number,
 
 
                                 Phone =
-                                ReadString(reader, "Phone"),
+                                    ReadString(
+                                        dataReader,
+                                        "Phone"),
 
 
                                 ImagePath =
-                                ReadString(reader, "ImagePath")
+                                    ReadString(
+                                        dataReader,
+                                        "ImagePath")
 
                             };
-
 
 
                             _context.Doctors.Add(doctor);
@@ -164,119 +235,111 @@ namespace HospitalWeb.Data
                             await _context.SaveChangesAsync();
 
 
-                            newDoctors++;
+                            addedDoctors++;
 
                         }
-
                         else
                         {
 
-                            oldDoctors++;
+                            doctor.الاسم = name;
+
+
+                            doctor.Phone =
+                                ReadString(
+                                    dataReader,
+                                    "Phone");
+
+
+
+                            doctor.ImagePath =
+                                ReadString(
+                                    dataReader,
+                                    "ImagePath");
+
+
+
+                            // حذف تدريبات الطبيب القديمة
+
+                            var oldRotations =
+                                await _context.TrainingRotations
+                                .Where(x =>
+                                    x.DoctorId == doctor.Id)
+                                .ToListAsync();
+
+
+
+                            _context.TrainingRotations
+                                .RemoveRange(oldRotations);
+
+
+
+                            await _context.SaveChangesAsync();
+
+
+
+                            updatedDoctors++;
 
                         }
 
 
 
+                        rotationsAdded +=
+                            await AddRotations(
+                                doctor.Id,
+                                dataReader);
 
-
-
-                        newRotations += await AddRotation(
-                            doctor.Id,
-                            "الجراحة",
-                            reader,
-                            "الجراحة مباشرة",
-                            "الجراحة انتهاء");
-
-
-
-                        newRotations += await AddRotation(
-                            doctor.Id,
-                            "الباطني",
-                            reader,
-                            "الباطني مباشرة",
-                            "الباطني انتهاء");
-
-
-
-                        newRotations += await AddRotation(
-                            doctor.Id,
-                            "النسائية",
-                            reader,
-                            "النسائية مباشرة",
-                            "النسائية انتهاء");
-
-
-
-                        newRotations += await AddRotation(
-                            doctor.Id,
-                            "الأطفال",
-                            reader,
-                            "الاطفال مباشرة",
-                            "الاطفال انتهاء");
-
-
-
-                        newRotations += await AddRotation(
-                            doctor.Id,
-                            "الطوارئ",
-                            reader,
-                            "الطوارئ مباشرة",
-                            "الطوارئ انتهاء");
-
-
-
-                        newRotations += await AddRotation(
-                            doctor.Id,
-                            "الاختياري",
-                            reader,
-                            "الاختياري مباشرة",
-                            "الاختياري انتهاء");
 
 
                     }
                     catch (Exception ex)
                     {
 
+                        Console.WriteLine(
+                            "خطأ في سجل: "
+                            + ex.Message);
+
+
                         errors++;
 
-                        errorDetails.Add(
-                            ex.InnerException?.Message
-                            ?? ex.Message);
-
                     }
 
                 }
 
 
 
+                // حفظ أي تغييرات متبقية
 
+                await _context.SaveChangesAsync();
+
+
+
+                Console.WriteLine(
+                    "انتهت قراءة بيانات الأطباء");
+                // النتيجة النهائية
 
                 string result =
-                    "تم الاستيراد بنجاح<br/>" +
+                    "تمت مزامنة Access بالكامل<br/><br/>" +
 
-                    $"الأطباء الجدد: {newDoctors}<br/>" +
+                    $"الأطباء الجدد: {addedDoctors}<br/>" +
 
-                    $"الأطباء الموجودون: {oldDoctors}<br/>" +
+                    $"الأطباء المحدثون: {updatedDoctors}<br/>" +
 
-                    $"التدريبات المضافة: {newRotations}<br/>" +
+                    $"الأطباء المحذوفون: {deletedDoctors}<br/>" +
 
-                    $"الأخطاء: {errors}<br/><br/>";
+                    $"التدريبات المضافة: {rotationsAdded}<br/>" +
 
-
-
-
-                if (errorDetails.Count > 0)
-                {
-
-                    result += "تفاصيل الأخطاء:<br/>";
+                    $"الأخطاء: {errors}";
 
 
-                    foreach (var e in errorDetails.Take(10))
-                    {
-                        result += e + "<br/>";
-                    }
+                result +=
+                    "<br/>عدد الأطباء في Access: "
+                    + accessNumbers.Count;
 
-                }
+
+
+                result +=
+                    "<br/>عدد الأطباء في البرنامج: "
+                    + await _context.Doctors.CountAsync();
 
 
 
@@ -288,9 +351,9 @@ namespace HospitalWeb.Data
             {
 
                 return
-                "خطأ رئيسي:<br/>" +
-                (ex.InnerException?.Message
-                ?? ex.Message);
+                    "خطأ: " +
+                    (ex.InnerException?.Message
+                    ?? ex.Message);
 
             }
 
@@ -300,8 +363,72 @@ namespace HospitalWeb.Data
 
 
 
+        private async Task<int> AddRotations(
+            int doctorId,
+            OleDbDataReader reader)
+        {
+
+            int count = 0;
 
 
+
+            count += await AddRotation(
+                doctorId,
+                "الجراحة",
+                reader,
+                "الجراحة مباشرة",
+                "الجراحة انتهاء");
+
+
+
+            count += await AddRotation(
+                doctorId,
+                "الباطني",
+                reader,
+                "الباطني مباشرة",
+                "الباطني انتهاء");
+
+
+
+            count += await AddRotation(
+                doctorId,
+                "النسائية",
+                reader,
+                "النسائية مباشرة",
+                "النسائية انتهاء");
+
+
+
+            count += await AddRotation(
+                doctorId,
+                "الأطفال",
+                reader,
+                "الاطفال مباشرة",
+                "الاطفال انتهاء");
+
+
+
+            count += await AddRotation(
+                doctorId,
+                "الطوارئ",
+                reader,
+                "الطوارئ مباشرة",
+                "الطوارئ انتهاء");
+
+
+
+            count += await AddRotation(
+                doctorId,
+                "الاختياري",
+                reader,
+                "الاختياري مباشرة",
+                "الاختياري انتهاء");
+
+
+
+            return count;
+
+        }
         private async Task<int> AddRotation(
             int doctorId,
             string departmentName,
@@ -309,7 +436,6 @@ namespace HospitalWeb.Data
             string startColumn,
             string endColumn)
         {
-
 
             DateTime? start =
                 GetDate(
@@ -328,13 +454,6 @@ namespace HospitalWeb.Data
 
 
 
-            if (end < start)
-                return 0;
-
-
-
-
-
             var department =
                 await _context.Departments
                 .FirstOrDefaultAsync(x =>
@@ -344,26 +463,6 @@ namespace HospitalWeb.Data
 
             if (department == null)
                 return 0;
-
-
-
-
-
-
-            // منع تكرار نفس القسم للطبيب
-            bool exists =
-                await _context.TrainingRotations
-                .AnyAsync(x =>
-                    x.DoctorId == doctorId &&
-                    x.DepartmentId == department.Id);
-
-
-
-            if (exists)
-                return 0;
-
-
-
 
 
 
@@ -395,12 +494,10 @@ namespace HospitalWeb.Data
 
 
 
-
         private object? ReadValue(
             OleDbDataReader reader,
             string column)
         {
-
             try
             {
                 return reader[column];
@@ -409,10 +506,7 @@ namespace HospitalWeb.Data
             {
                 return null;
             }
-
         }
-
-
 
 
 
@@ -423,12 +517,16 @@ namespace HospitalWeb.Data
             string column)
         {
 
-            var value = ReadValue(reader, column);
+            var value =
+                ReadValue(reader, column);
 
 
 
-            if (value == null || value == DBNull.Value)
+            if (value == null ||
+                value == DBNull.Value)
+            {
                 return null;
+            }
 
 
 
@@ -440,47 +538,23 @@ namespace HospitalWeb.Data
 
 
 
-
-
-        private string? ReadFirstString(
-            OleDbDataReader reader,
-            params string[] columns)
-        {
-
-            foreach (var c in columns)
-            {
-
-                var value = ReadString(reader, c);
-
-
-                if (!string.IsNullOrWhiteSpace(value))
-                    return value;
-
-            }
-
-
-            return null;
-
-        }
-
-
-
-
-
-
-
         private DateTime? GetDate(object? value)
         {
 
-            if (value == null || value == DBNull.Value)
+            if (value == null ||
+                value == DBNull.Value)
+            {
                 return null;
+            }
 
 
 
             if (DateTime.TryParse(
                 value.ToString(),
                 out DateTime date))
+            {
                 return date;
+            }
 
 
 
