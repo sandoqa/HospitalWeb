@@ -1076,7 +1076,8 @@ namespace HospitalWeb.Controllers
             );
         }
     
-    // =========================
+    
+// =========================
 // الأطباء الحاليين في قسم معين
 // =========================
 
@@ -1085,13 +1086,12 @@ public async Task<IActionResult> DepartmentDoctors(string name)
             if (string.IsNullOrEmpty(name))
                 return RedirectToAction(nameof(Index));
 
-
             var today = DateTime.Today;
-
 
             var doctors =
                 await _context.TrainingRotations
                 .Include(x => x.Doctor)
+                .ThenInclude(x => x.TrainingRotations)
                 .Include(x => x.Department)
                 .Where(x =>
                     x.Department.Name == name &&
@@ -1100,14 +1100,27 @@ public async Task<IActionResult> DepartmentDoctors(string name)
                 )
                 .Select(x => x.Doctor)
                 .Distinct()
+                .OrderBy(x => x.الاسم)
                 .ToListAsync();
 
+            // حساب أيام التنبيه لكل طبيب
+            Dictionary<int, int> warningDays = new();
 
+            foreach (var doctor in doctors)
+            {
+                int days = GetWarningDays(doctor);
 
+                if (days >= 1 && days <= 5)
+                {
+                    warningDays[doctor.Id] = days;
+                }
+            }
+
+            ViewBag.WarningDays = warningDays;
             ViewBag.DepartmentName = name;
-
 
             return View(doctors);
         }
+
     }
 }
