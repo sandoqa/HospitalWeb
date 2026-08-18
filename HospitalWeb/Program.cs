@@ -12,6 +12,9 @@ Environment.SetEnvironmentVariable(
 );
 
 
+// =====================================
+// Web Application Options
+// =====================================
 
 var options = new WebApplicationOptions
 {
@@ -21,9 +24,7 @@ var options = new WebApplicationOptions
 };
 
 
-
 var builder = WebApplication.CreateBuilder(options);
-
 
 
 // =====================================
@@ -39,12 +40,13 @@ builder.Configuration.AddJsonFile(
 );
 
 
-
 // =====================================
 // Render PORT
 // =====================================
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+var port =
+    Environment.GetEnvironmentVariable("PORT")
+    ?? "5000";
 
 
 builder.WebHost.UseUrls(
@@ -52,27 +54,26 @@ builder.WebHost.UseUrls(
 );
 
 
-
 // =====================================
-// MVC
+// MVC + API Controllers
 // =====================================
 
 builder.Services.AddControllersWithViews();
-
 
 
 // =====================================
 // SQLite Database
 // =====================================
 
-string rootPath = Directory.GetCurrentDirectory();
+string rootPath =
+    Directory.GetCurrentDirectory();
 
 
-string appDataPath = Path.Combine(
-    rootPath,
-    "App_Data"
-);
-
+string appDataPath =
+    Path.Combine(
+        rootPath,
+        "App_Data"
+    );
 
 
 if (!Directory.Exists(appDataPath))
@@ -81,12 +82,11 @@ if (!Directory.Exists(appDataPath))
 }
 
 
-
-string dbPath = Path.Combine(
-    appDataPath,
-    "hospital.db"
-);
-
+string dbPath =
+    Path.Combine(
+        appDataPath,
+        "hospital.db"
+    );
 
 
 // =====================================
@@ -119,7 +119,6 @@ Console.WriteLine(
 );
 
 
-
 if (File.Exists(dbPath))
 {
     Console.WriteLine(
@@ -130,7 +129,6 @@ if (File.Exists(dbPath))
 }
 
 
-
 Console.WriteLine(
     "PORT = " +
     port
@@ -138,7 +136,6 @@ Console.WriteLine(
 
 
 Console.WriteLine("====================================");
-
 
 
 // =====================================
@@ -155,7 +152,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(
 );
 
 
-
 // =====================================
 // Access Importer
 // =====================================
@@ -163,13 +159,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(
 builder.Services.AddScoped<AccessImporter>();
 
 
-
 // =====================================
 // Build
 // =====================================
 
 var app = builder.Build();
-
 
 
 // =====================================
@@ -180,10 +174,9 @@ using (var scope = app.Services.CreateScope())
 {
     try
     {
-
-        var db = scope.ServiceProvider
-            .GetRequiredService<ApplicationDbContext>();
-
+        var db =
+            scope.ServiceProvider
+                .GetRequiredService<ApplicationDbContext>();
 
 
         Console.WriteLine(
@@ -192,12 +185,10 @@ using (var scope = app.Services.CreateScope())
         );
 
 
-
         Console.WriteLine(
             "Doctors Count = " +
             db.Doctors.Count()
         );
-
 
 
         Console.WriteLine(
@@ -206,24 +197,19 @@ using (var scope = app.Services.CreateScope())
         );
 
 
-
         Console.WriteLine(
             "Departments Count = " +
             db.Departments.Count()
         );
-
     }
     catch (Exception ex)
     {
-
         Console.WriteLine(
             "DATABASE ERROR = " +
             ex
         );
-
     }
 }
-
 
 
 // =====================================
@@ -232,13 +218,10 @@ using (var scope = app.Services.CreateScope())
 
 if (!app.Environment.IsDevelopment())
 {
-
     app.UseExceptionHandler("/Home/Error");
 
     app.UseHsts();
-
 }
-
 
 
 // =====================================
@@ -247,16 +230,21 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 
-
 app.UseRouting();
-
 
 app.UseAuthorization();
 
 
+// =====================================
+// API Controllers
+// „Â„ Ãœ« ·‹ SyncController
+// =====================================
+
+app.MapControllers();
+
 
 // =====================================
-// Default Route
+// Default MVC Route
 // =====================================
 
 app.MapControllerRoute(
@@ -265,5 +253,8 @@ app.MapControllerRoute(
 );
 
 
+// =====================================
+// Run
+// =====================================
 
 app.Run();
