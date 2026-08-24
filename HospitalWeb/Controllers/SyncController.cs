@@ -27,6 +27,66 @@ namespace HospitalWeb.Controllers
             return Ok("Hospital Sync API يعمل بنجاح");
         }
 
+        
+// =========================================================
+// فحص الأطباء الموجودين في الموقع
+// =========================================================
+
+[HttpGet("CheckDoctors")]
+public async Task<IActionResult> CheckDoctors()
+        {
+            try
+            {
+                var doctors = await _context.Doctors
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                int total = doctors.Count;
+
+                int withNumber = doctors.Count(x =>
+                    !string.IsNullOrWhiteSpace(x.رقم_الطبيب));
+
+                int withoutNumber = doctors.Count(x =>
+                    string.IsNullOrWhiteSpace(x.رقم_الطبيب));
+
+                var duplicateNumbers = doctors
+                    .Where(x => !string.IsNullOrWhiteSpace(x.رقم_الطبيب))
+                    .GroupBy(x => x.رقم_الطبيب!.Trim())
+                    .Where(g => g.Count() > 1)
+                    .Select(g => new
+                    {
+                        Number = g.Key,
+                        Count = g.Count(),
+                        Names = g.Select(x => x.الاسم).ToList()
+                    })
+                    .ToList();
+
+                return Ok(new
+                {
+                    success = true,
+
+                    totalDoctors = total,
+
+                    doctorsWithNumber = withNumber,
+
+                    doctorsWithoutNumber = withoutNumber,
+
+                    duplicateNumbersCount = duplicateNumbers.Count,
+
+                    duplicateNumbers = duplicateNumbers
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    error = ex.Message,
+                    innerError = ex.InnerException?.Message
+                });
+            }
+        }
+
 
         // =========================================================
         // استقبال المزامنة
@@ -203,14 +263,12 @@ namespace HospitalWeb.Controllers
                 // =====================================================
 
                 var doctorsToDelete =
-                    existingDoctors
-                        .Where(x =>
-                            string.IsNullOrWhiteSpace(
-                                x.رقم_الطبيب)
-                            ||
-                            !accessDoctorNumbers.Contains(
-                                x.رقم_الطبيب.Trim()))
-                        .ToList();
+    existingDoctors
+        .Where(x =>
+            string.IsNullOrWhiteSpace(x.رقم_الطبيب) ||
+            !accessDoctorNumbers.Contains(
+                x.رقم_الطبيب.Trim()))
+        .ToList();
 
 
                 foreach (var doctor
