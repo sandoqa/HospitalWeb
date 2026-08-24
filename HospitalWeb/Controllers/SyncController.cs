@@ -11,7 +11,8 @@ namespace HospitalWeb.Controllers
     {
         private readonly ApplicationDbContext _context;
 
-        public SyncController(ApplicationDbContext context)
+
+    public SyncController(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -28,7 +29,7 @@ namespace HospitalWeb.Controllers
 
 
         // =========================================================
-        // استقبال المزامنة من برنامج VB.NET
+        // استقبال المزامنة
         // =========================================================
 
         [HttpPost("Receive")]
@@ -51,29 +52,43 @@ namespace HospitalWeb.Controllers
                 int added = 0;
                 int updated = 0;
                 int deleted = 0;
+                int duplicateRemoved = 0;
+
+
+                // =====================================================
+                // تنظيف بيانات Access من التكرار
+                // =====================================================
+
+                var cleanDoctors = doctors
+                    .Where(x =>
+                        !string.IsNullOrWhiteSpace(x.الرقم))
+                    .GroupBy(x =>
+                        x.الرقم!.Trim())
+                    .Select(g => g.First())
+                    .ToList();
+
+
+                duplicateRemoved =
+                    doctors.Count - cleanDoctors.Count;
 
 
                 // =====================================================
                 // الأقسام
                 // =====================================================
 
-                var departments = await _context.Departments
-                    .ToListAsync();
-
-
-                // =====================================================
-                // التأكد من وجود الأقسام
-                // =====================================================
-
                 string[] departmentNames =
                 {
-                    "الجراحة",
-                    "الباطني",
-                    "النسائية",
-                    "الأطفال",
-                    "الطوارئ",
-                    "الاختياري"
-                };
+                "الجراحة",
+                "الباطني",
+                "النسائية",
+                "الأطفال",
+                "الطوارئ",
+                "الاختياري"
+            };
+
+
+                var departments =
+                    await _context.Departments.ToListAsync();
 
 
                 foreach (var departmentName in departmentNames)
@@ -93,9 +108,8 @@ namespace HospitalWeb.Controllers
                 await _context.SaveChangesAsync();
 
 
-                // إعادة تحميل الأقسام
-                departments = await _context.Departments
-                    .ToListAsync();
+                departments =
+                    await _context.Departments.ToListAsync();
 
 
                 // =====================================================
@@ -103,8 +117,7 @@ namespace HospitalWeb.Controllers
                 // =====================================================
 
                 var accessDoctorNumbers =
-                    doctors
-                        .Where(x => !string.IsNullOrWhiteSpace(x.الرقم))
+                    cleanDoctors
                         .Select(x => x.الرقم!.Trim())
                         .ToHashSet();
 
@@ -120,22 +133,25 @@ namespace HospitalWeb.Controllers
 
 
                 // =====================================================
-                // إضافة / تعديل
+                // معالجة كل طبيب
                 // =====================================================
 
-                foreach (var source in doctors)
+                foreach (var source in cleanDoctors)
                 {
-                    if (string.IsNullOrWhiteSpace(source.الرقم))
-                        continue;
-
-
                     string doctorNumber =
-                        source.الرقم.Trim();
+                        source.الرقم!.Trim();
 
+
+                    // =================================================
+                    // البحث عن الطبيب بواسطة رقم الطبيب
+                    // =================================================
 
                     var doctor =
                         existingDoctors.FirstOrDefault(
-                            x => x.رقم_الطبيب == doctorNumber);
+                            x =>
+                                !string.IsNullOrWhiteSpace(x.رقم_الطبيب) &&
+                                x.رقم_الطبيب.Trim() ==
+                                doctorNumber);
 
 
                     // =================================================
@@ -148,8 +164,10 @@ namespace HospitalWeb.Controllers
                         {
                             رقم_الطبيب = doctorNumber,
                             الاسم = source.الاسم ?? "",
-                            مكان_المباشرة = source.مكان_المباشرة,
-                            تاريخ_المباشرة = source.تاريخ_المباشرة,
+                            مكان_المباشرة =
+                                source.مكان_المباشرة,
+                            تاريخ_المباشرة =
+                                source.تاريخ_المباشرة,
                             Phone = source.Phone,
                             ImagePath = source.ImagePath
                         };
@@ -159,20 +177,21 @@ namespace HospitalWeb.Controllers
 
                         await _context.SaveChangesAsync();
 
-                        added++;
-
                         existingDoctors.Add(doctor);
+
+                        added++;
                     }
                     else
                     {
-                        // =================================================
-                        // تعديل بيانات الطبيب
-                        // =================================================
+                        // =============================================
+                        // تحديث بيانات الطبيب
+                        // =============================================
 
                         bool changed = false;
 
 
-                        if (doctor.الاسم != source.الاسم)
+                        if (doctor.الاسم !=
+                            (source.الاسم ?? ""))
                         {
                             doctor.الاسم =
                                 source.الاسم ?? "";
@@ -201,7 +220,8 @@ namespace HospitalWeb.Controllers
                         }
 
 
-                        if (doctor.Phone != source.Phone)
+                        if (doctor.Phone !=
+                            source.Phone)
                         {
                             doctor.Phone =
                                 source.Phone;
@@ -210,7 +230,8 @@ namespace HospitalWeb.Controllers
                         }
 
 
-                        if (doctor.ImagePath != source.ImagePath)
+                        if (doctor.ImagePath !=
+                            source.ImagePath)
                         {
                             doctor.ImagePath =
                                 source.ImagePath;
@@ -230,7 +251,7 @@ namespace HospitalWeb.Controllers
                     // مزامنة الأقسام
                     // =================================================
 
-                    await SyncRotation(
+                    SyncRotation(
                         doctor,
                         "الجراحة",
                         source.الجراحة_مباشرة,
@@ -238,7 +259,7 @@ namespace HospitalWeb.Controllers
                         departments);
 
 
-                    await SyncRotation(
+                    SyncRotation(
                         doctor,
                         "الباطني",
                         source.الباطني_مباشرة,
@@ -246,7 +267,7 @@ namespace HospitalWeb.Controllers
                         departments);
 
 
-                    await SyncRotation(
+                    SyncRotation(
                         doctor,
                         "النسائية",
                         source.النسائية_مباشرة,
@@ -254,7 +275,7 @@ namespace HospitalWeb.Controllers
                         departments);
 
 
-                    await SyncRotation(
+                    SyncRotation(
                         doctor,
                         "الأطفال",
                         source.الاطفال_مباشرة,
@@ -262,7 +283,7 @@ namespace HospitalWeb.Controllers
                         departments);
 
 
-                    await SyncRotation(
+                    SyncRotation(
                         doctor,
                         "الطوارئ",
                         source.الطوارئ_مباشرة,
@@ -270,7 +291,7 @@ namespace HospitalWeb.Controllers
                         departments);
 
 
-                    await SyncRotation(
+                    SyncRotation(
                         doctor,
                         "الاختياري",
                         source.الاختياري_مباشرة,
@@ -283,13 +304,15 @@ namespace HospitalWeb.Controllers
 
 
                 // =====================================================
-                // حذف الأطباء الذين لم يعودوا موجودين في Access
+                // حذف الأطباء الموجودين في الموقع وغير الموجودين
+                // في Access
                 // =====================================================
 
                 var doctorsToDelete =
                     existingDoctors
                         .Where(x =>
-                            !string.IsNullOrWhiteSpace(x.رقم_الطبيب) &&
+                            !string.IsNullOrWhiteSpace(
+                                x.رقم_الطبيب) &&
                             !accessDoctorNumbers.Contains(
                                 x.رقم_الطبيب.Trim()))
                         .ToList();
@@ -307,17 +330,61 @@ namespace HospitalWeb.Controllers
 
 
                 // =====================================================
+                // تنظيف أي سجلات تدريب مكررة
+                // =====================================================
+
+                var allRotations =
+                    await _context.TrainingRotations
+                        .ToListAsync();
+
+
+                var duplicateRotations =
+                    allRotations
+                        .GroupBy(x =>
+                            new
+                            {
+                                x.DoctorId,
+                                x.DepartmentId
+                            })
+                        .Where(g => g.Count() > 1)
+                        .SelectMany(g =>
+                            g.Skip(1))
+                        .ToList();
+
+
+                foreach (var rotation in duplicateRotations)
+                {
+                    _context.TrainingRotations.Remove(rotation);
+
+                    duplicateRemoved++;
+                }
+
+
+                await _context.SaveChangesAsync();
+
+
+                // =====================================================
                 // النتيجة
                 // =====================================================
 
                 return Ok(new
                 {
                     success = true,
-                    message = "تمت المزامنة بنجاح",
+
+                    message =
+                        "تمت المزامنة والتنظيف بنجاح",
+
                     added = added,
+
                     updated = updated,
+
                     deleted = deleted,
-                    total = doctors.Count
+
+                    duplicateRemoved =
+                        duplicateRemoved,
+
+                    total =
+                        cleanDoctors.Count
                 });
             }
             catch (Exception ex)
@@ -327,9 +394,15 @@ namespace HospitalWeb.Controllers
                     new
                     {
                         success = false,
-                        message = "حدث خطأ أثناء المزامنة",
-                        error = ex.Message,
-                        innerError = ex.InnerException?.Message
+
+                        message =
+                            "حدث خطأ أثناء المزامنة",
+
+                        error =
+                            ex.Message,
+
+                        innerError =
+                            ex.InnerException?.Message
                     });
             }
         }
@@ -339,7 +412,7 @@ namespace HospitalWeb.Controllers
         // مزامنة تدريب واحد
         // =========================================================
 
-        private async Task SyncRotation(
+        private void SyncRotation(
             Doctor doctor,
             string departmentName,
             DateTime? startDate,
@@ -348,30 +421,33 @@ namespace HospitalWeb.Controllers
         {
             var department =
                 departments.FirstOrDefault(
-                    x => x.Name == departmentName);
+                    x =>
+                        x.Name == departmentName);
 
 
             if (department == null)
                 return;
 
 
-            var rotation =
+            var rotations =
                 doctor.TrainingRotations
-                    .FirstOrDefault(
-                        x => x.DepartmentId ==
-                             department.Id);
+                    .Where(x =>
+                        x.DepartmentId ==
+                        department.Id)
+                    .ToList();
 
 
             // =====================================================
-            // لا توجد تواريخ في Access
+            // لا توجد تواريخ
             // =====================================================
 
             if (!startDate.HasValue ||
                 !endDate.HasValue)
             {
-                if (rotation != null)
+                foreach (var rotation in rotations)
                 {
-                    _context.TrainingRotations.Remove(rotation);
+                    _context.TrainingRotations
+                        .Remove(rotation);
                 }
 
                 return;
@@ -379,32 +455,51 @@ namespace HospitalWeb.Controllers
 
 
             // =====================================================
-            // تدريب جديد
+            // إذا كان هناك أكثر من سجل لنفس الطبيب والقسم
+            // نحتفظ بأول سجل ونحذف البقية
             // =====================================================
 
-            if (rotation == null)
-            {
-                rotation = new TrainingRotation
-                {
-                    DoctorId = doctor.Id,
-                    DepartmentId = department.Id,
-                    StartDate = startDate.Value,
-                    EndDate = endDate.Value
-                };
+            TrainingRotation? currentRotation =
+                rotations.FirstOrDefault();
 
-                _context.TrainingRotations.Add(rotation);
+
+            if (currentRotation == null)
+            {
+                currentRotation =
+                    new TrainingRotation
+                    {
+                        DoctorId =
+                            doctor.Id,
+
+                        DepartmentId =
+                            department.Id,
+
+                        StartDate =
+                            startDate.Value,
+
+                        EndDate =
+                            endDate.Value
+                    };
+
+                _context.TrainingRotations
+                    .Add(currentRotation);
             }
             else
             {
-                // =================================================
-                // تعديل التدريب
-                // =================================================
-
-                rotation.StartDate =
+                currentRotation.StartDate =
                     startDate.Value;
 
-                rotation.EndDate =
+                currentRotation.EndDate =
                     endDate.Value;
+
+
+                // حذف السجلات الإضافية
+                foreach (var duplicate
+                    in rotations.Skip(1))
+                {
+                    _context.TrainingRotations
+                        .Remove(duplicate);
+                }
             }
         }
 
@@ -459,4 +554,6 @@ namespace HospitalWeb.Controllers
             public string? Phone { get; set; }
         }
     }
+
+
 }
