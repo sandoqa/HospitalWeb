@@ -1,8 +1,9 @@
-﻿
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using HospitalWeb.Controllers;
 using HospitalWeb.Data;
 using HospitalWeb.Models;
+
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace HospitalWeb.Controllers
 {
@@ -17,6 +18,7 @@ namespace HospitalWeb.Controllers
             _context = context;
         }
 
+
         // =========================================================
         // اختبار الاتصال
         // =========================================================
@@ -27,18 +29,19 @@ namespace HospitalWeb.Controllers
             return Ok("Hospital Sync API يعمل بنجاح");
         }
 
-        
-// =========================================================
-// فحص الأطباء الموجودين في الموقع
-// =========================================================
 
-[HttpGet("CheckDoctors")]
-public async Task<IActionResult> CheckDoctors()
+        // =========================================================
+        // فحص الأطباء الموجودين في HospitalWeb
+        // =========================================================
+
+        [HttpGet("CheckDoctors")]
+        public async Task<IActionResult> CheckDoctors()
         {
             try
             {
                 var doctors = await _context.Doctors
                     .AsNoTracking()
+                    .OrderBy(x => x.رقم_الطبيب)
                     .ToListAsync();
 
                 int total = doctors.Count;
@@ -50,14 +53,19 @@ public async Task<IActionResult> CheckDoctors()
                     string.IsNullOrWhiteSpace(x.رقم_الطبيب));
 
                 var duplicateNumbers = doctors
-                    .Where(x => !string.IsNullOrWhiteSpace(x.رقم_الطبيب))
-                    .GroupBy(x => x.رقم_الطبيب!.Trim())
+                    .Where(x =>
+                        !string.IsNullOrWhiteSpace(x.رقم_الطبيب))
+                    .GroupBy(
+                        x => x.رقم_الطبيب!.Trim(),
+                        StringComparer.OrdinalIgnoreCase)
                     .Where(g => g.Count() > 1)
                     .Select(g => new
                     {
                         Number = g.Key,
                         Count = g.Count(),
-                        Names = g.Select(x => x.الاسم).ToList()
+                        Names = g
+                            .Select(x => x.الاسم)
+                            .ToList()
                     })
                     .ToList();
 
@@ -71,25 +79,35 @@ public async Task<IActionResult> CheckDoctors()
 
                     doctorsWithoutNumber = withoutNumber,
 
-                    duplicateNumbersCount = duplicateNumbers.Count,
+                    duplicateNumbersCount =
+                        duplicateNumbers.Count,
 
-                    duplicateNumbers = duplicateNumbers
+                    duplicateNumbers =
+                        duplicateNumbers
                 });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
-                {
-                    success = false,
-                    error = ex.Message,
-                    innerError = ex.InnerException?.Message
-                });
+                return StatusCode(
+                    500,
+                    new
+                    {
+                        success = false,
+                        error = ex.Message,
+                        innerError =
+                            ex.InnerException?.Message
+                    });
             }
         }
 
 
         // =========================================================
-        // استقبال المزامنة
+        // استقبال المزامنة الكاملة
+        //
+        // المصدر الرئيسي:
+        // Visual Basic / Access
+        //
+        // HospitalWeb = نسخة من بيانات Access
         // =========================================================
 
         [HttpPost("Receive")]
@@ -97,17 +115,29 @@ public async Task<IActionResult> CheckDoctors()
         public async Task<IActionResult> Receive(
             [FromBody] List<DoctorSyncModel> doctors)
         {
+            await using var transaction =
+                await _context.Database.BeginTransactionAsync();
+
             try
             {
+                // =================================================
+                // 1. التحقق من البيانات
+                // =================================================
+
                 if (doctors == null || doctors.Count == 0)
                 {
                     return BadRequest(new
                     {
                         success = false,
-                        message = "لا توجد بيانات للمزامنة."
+                        message =
+                            "لا توجد بيانات للمزامنة."
                     });
                 }
 
+
+                // =================================================
+                // العدادات
+                // =================================================
 
                 int added = 0;
                 int updated = 0;
@@ -120,77 +150,48 @@ public async Task<IActionResult> CheckDoctors()
                 int rotationsDeleted = 0;
 
 
-                // =====================================================
-                // 1. تنظيف بيانات Access
-                // =====================================================
+                // =================================================
+                // 2. تنظيف بيانات Access
+                //
+                // نستبعد السجلات التي لا تحتوي رقم طبيب.
+                // =================================================
 
                 var validDoctors =
                     doctors
                         .Where(x =>
-                            !string.IsNullOrWhiteSpace(x.الرقم))
+                            !string.IsNullOrWhiteSpace(
+                                x.الرقم))
                         .ToList();
 
 
-                // =====================================================
-                // 2. منع التكرار في Access
-                // =====================================================
+                // =================================================
+                // 3. إزالة التكرار من Access
+                //
+                // الرقم هو المفتاح الفريد للطبيب.
+                //
+                // إذا تكرر الرقم:
+                // نحتفظ بأول سجل فقط.
+                // =================================================
 
                 var cleanDoctors =
                     validDoctors
-                        .GroupBy(x =>
-                            x.الرقم!.Trim(),
+                        .GroupBy(
+                            x => x.الرقم!.Trim(),
                             StringComparer.OrdinalIgnoreCase)
                         .Select(g => g.First())
                         .ToList();
 
 
                 duplicateRemoved +=
-                    validDoctors.Count - cleanDoctors.Count;
+                    validDoctors.Count -
+                    cleanDoctors.Count;
 
 
-                // =====================================================
-                // 3. الأقسام
-                // =====================================================
-
-                string[] departmentNames =
-                {
-                    "الجراحة",
-                    "الباطني",
-                    "النسائية",
-                    "الأطفال",
-                    "الطوارئ",
-                    "الاختياري"
-                };
-
-
-                var departments =
-                    await _context.Departments.ToListAsync();
-
-
-                foreach (var departmentName in departmentNames)
-                {
-                    if (!departments.Any(
-                        x => x.Name == departmentName))
-                    {
-                        _context.Departments.Add(
-                            new Department
-                            {
-                                Name = departmentName
-                            });
-                    }
-                }
-
-
-                await _context.SaveChangesAsync();
-
-
-                departments =
-                    await _context.Departments.ToListAsync();
-
-
-                // =====================================================
-                // 4. أرقام الأطباء الموجودة في Access
-                // =====================================================
+                // =================================================
+                // 4. إنشاء مجموعة أرقام Access
+                //
+                // هذه المجموعة هي المرجع الأساسي للحذف.
+                // =================================================
 
                 var accessDoctorNumbers =
                     cleanDoctors
@@ -199,9 +200,17 @@ public async Task<IActionResult> CheckDoctors()
                             StringComparer.OrdinalIgnoreCase);
 
 
-                // =====================================================
-                // 5. قراءة جميع الأطباء الموجودين في HospitalWeb
-                // =====================================================
+                // =================================================
+                // 5. التأكد من وجود الأقسام الستة
+                // =================================================
+
+                var departments =
+                    await EnsureDepartmentsAsync();
+
+
+                // =================================================
+                // 6. قراءة جميع الأطباء الموجودين في HospitalWeb
+                // =================================================
 
                 var existingDoctors =
                     await _context.Doctors
@@ -209,30 +218,51 @@ public async Task<IActionResult> CheckDoctors()
                         .ToListAsync();
 
 
-                // =====================================================
-                // 6. تنظيف التكرارات الموجودة في HospitalWeb
+                // =================================================
+                // 7. تنظيف التكرارات الموجودة في HospitalWeb
                 //
-                // إذا كان نفس رقم الطبيب موجودًا أكثر من مرة
-                // نحتفظ بسجل واحد فقط.
-                // =====================================================
+                // إذا كان رقم الطبيب مكررًا:
+                // نحتفظ بأول طبيب ونحذف الباقي.
+                // =================================================
 
                 var duplicateDoctors =
                     existingDoctors
                         .Where(x =>
                             !string.IsNullOrWhiteSpace(
                                 x.رقم_الطبيب))
-                        .GroupBy(x =>
-                            x.رقم_الطبيب!.Trim(),
+                        .GroupBy(
+                            x => x.رقم_الطبيب!.Trim(),
                             StringComparer.OrdinalIgnoreCase)
                         .Where(g => g.Count() > 1)
-                        .SelectMany(g =>
-                            g.Skip(1))
+                        .SelectMany(g => g.Skip(1))
                         .ToList();
 
 
                 foreach (var duplicateDoctor
                     in duplicateDoctors)
                 {
+                    // ---------------------------------------------
+                    // حذف تدريبات الطبيب المكرر أولًا
+                    // ---------------------------------------------
+
+                    if (duplicateDoctor.TrainingRotations != null &&
+                        duplicateDoctor.TrainingRotations.Count > 0)
+                    {
+                        foreach (var rotation
+                            in duplicateDoctor.TrainingRotations.ToList())
+                        {
+                            _context.TrainingRotations.Remove(
+                                rotation);
+
+                            rotationsDeleted++;
+                        }
+                    }
+
+
+                    // ---------------------------------------------
+                    // حذف الطبيب المكرر
+                    // ---------------------------------------------
+
                     _context.Doctors.Remove(
                         duplicateDoctor);
 
@@ -241,12 +271,15 @@ public async Task<IActionResult> CheckDoctors()
                 }
 
 
-                await _context.SaveChangesAsync();
+                if (duplicateDoctors.Count > 0)
+                {
+                    await _context.SaveChangesAsync();
+                }
 
 
-                // =====================================================
-                // إعادة قراءة الأطباء بعد تنظيف التكرار
-                // =====================================================
+                // =================================================
+                // 8. إعادة قراءة الأطباء بعد تنظيف التكرارات
+                // =================================================
 
                 existingDoctors =
                     await _context.Doctors
@@ -254,38 +287,66 @@ public async Task<IActionResult> CheckDoctors()
                         .ToListAsync();
 
 
-                // =====================================================
-                // 7. حذف جميع الأطباء غير الموجودين في Access
+                // =================================================
+                // 9. حذف الأطباء غير الموجودين في Access
                 //
-                // يشمل:
-                // - الطبيب الذي رقمه غير موجود في Access
-                // - الطبيب الذي ليس لديه رقم طبيب
-                // =====================================================
+                // أي طبيب في Web لا يوجد رقمه في Access
+                // سيتم حذفه.
+                //
+                // وكذلك أي طبيب بدون رقم.
+                // =================================================
 
                 var doctorsToDelete =
-    existingDoctors
-        .Where(x =>
-            string.IsNullOrWhiteSpace(x.رقم_الطبيب) ||
-            !accessDoctorNumbers.Contains(
-                x.رقم_الطبيب.Trim()))
-        .ToList();
+                    existingDoctors
+                        .Where(x =>
+                            string.IsNullOrWhiteSpace(
+                                x.رقم_الطبيب)
+                            ||
+                            !accessDoctorNumbers.Contains(
+                                x.رقم_الطبيب.Trim()))
+                        .ToList();
 
 
                 foreach (var doctor
                     in doctorsToDelete)
                 {
+                    // ---------------------------------------------
+                    // حذف تدريبات الطبيب أولًا
+                    // ---------------------------------------------
+
+                    if (doctor.TrainingRotations != null &&
+                        doctor.TrainingRotations.Count > 0)
+                    {
+                        foreach (var rotation
+                            in doctor.TrainingRotations.ToList())
+                        {
+                            _context.TrainingRotations.Remove(
+                                rotation);
+
+                            rotationsDeleted++;
+                        }
+                    }
+
+
+                    // ---------------------------------------------
+                    // حذف الطبيب
+                    // ---------------------------------------------
+
                     _context.Doctors.Remove(doctor);
 
                     deleted++;
                 }
 
 
-                await _context.SaveChangesAsync();
+                if (doctorsToDelete.Count > 0)
+                {
+                    await _context.SaveChangesAsync();
+                }
 
 
-                // =====================================================
-                // إعادة قراءة الأطباء بعد الحذف
-                // =====================================================
+                // =================================================
+                // 10. إعادة قراءة الأطباء بعد الحذف
+                // =================================================
 
                 existingDoctors =
                     await _context.Doctors
@@ -293,9 +354,29 @@ public async Task<IActionResult> CheckDoctors()
                         .ToListAsync();
 
 
-                // =====================================================
-                // 8. معالجة أطباء Access
-                // =====================================================
+                // =================================================
+                // 11. Dictionary للبحث السريع
+                //
+                // المفتاح = رقم الطبيب
+                // =================================================
+
+                var doctorDictionary =
+                    existingDoctors
+                        .Where(x =>
+                            !string.IsNullOrWhiteSpace(
+                                x.رقم_الطبيب))
+                        .GroupBy(
+                            x => x.رقم_الطبيب!.Trim(),
+                            StringComparer.OrdinalIgnoreCase)
+                        .ToDictionary(
+                            g => g.Key,
+                            g => g.First(),
+                            StringComparer.OrdinalIgnoreCase);
+
+
+                // =================================================
+                // 12. معالجة أطباء Access
+                // =================================================
 
                 foreach (var source in cleanDoctors)
                 {
@@ -303,20 +384,16 @@ public async Task<IActionResult> CheckDoctors()
                         source.الرقم!.Trim();
 
 
+                    Doctor? doctor = null;
+
+
                     // =================================================
                     // البحث بواسطة رقم الطبيب
                     // =================================================
 
-                    var doctor =
-                        existingDoctors.FirstOrDefault(
-                            x =>
-                                !string.IsNullOrWhiteSpace(
-                                    x.رقم_الطبيب)
-                                &&
-                                x.رقم_الطبيب.Trim()
-                                    .Equals(
-                                        doctorNumber,
-                                        StringComparison.OrdinalIgnoreCase));
+                    doctorDictionary.TryGetValue(
+                        doctorNumber,
+                        out doctor);
 
 
                     // =================================================
@@ -350,9 +427,9 @@ public async Task<IActionResult> CheckDoctors()
 
                         _context.Doctors.Add(doctor);
 
-                        await _context.SaveChangesAsync();
-
-                        existingDoctors.Add(doctor);
+                        doctorDictionary.Add(
+                            doctorNumber,
+                            doctor);
 
                         added++;
                     }
@@ -365,15 +442,26 @@ public async Task<IActionResult> CheckDoctors()
                         bool changed = false;
 
 
-                        if (doctor.الاسم !=
-                            (source.الاسم ?? ""))
+                        // ---------------------------------------------
+                        // الاسم
+                        // ---------------------------------------------
+
+                        string newName =
+                            source.الاسم ?? "";
+
+
+                        if (doctor.الاسم != newName)
                         {
                             doctor.الاسم =
-                                source.الاسم ?? "";
+                                newName;
 
                             changed = true;
                         }
 
+
+                        // ---------------------------------------------
+                        // مكان المباشرة
+                        // ---------------------------------------------
 
                         if (doctor.مكان_المباشرة !=
                             source.مكان_المباشرة)
@@ -385,6 +473,10 @@ public async Task<IActionResult> CheckDoctors()
                         }
 
 
+                        // ---------------------------------------------
+                        // تاريخ المباشرة
+                        // ---------------------------------------------
+
                         if (doctor.تاريخ_المباشرة !=
                             source.تاريخ_المباشرة)
                         {
@@ -395,6 +487,10 @@ public async Task<IActionResult> CheckDoctors()
                         }
 
 
+                        // ---------------------------------------------
+                        // الهاتف
+                        // ---------------------------------------------
+
                         if (doctor.Phone !=
                             source.Phone)
                         {
@@ -404,6 +500,10 @@ public async Task<IActionResult> CheckDoctors()
                             changed = true;
                         }
 
+
+                        // ---------------------------------------------
+                        // الصورة
+                        // ---------------------------------------------
 
                         if (doctor.ImagePath !=
                             source.ImagePath)
@@ -420,10 +520,64 @@ public async Task<IActionResult> CheckDoctors()
                             updated++;
                         }
                     }
+                }
+
+
+                // =================================================
+                // 13. حفظ الأطباء
+                //
+                // مهم جدًا:
+                // نحفظ قبل مزامنة التدريبات حتى تحصل الأطباء
+                // الجدد على Id من قاعدة البيانات.
+                // =================================================
+
+                await _context.SaveChangesAsync();
+
+
+                // =================================================
+                // 14. إعادة تحميل الأطباء والتدريبات
+                // =================================================
+
+                existingDoctors =
+                    await _context.Doctors
+                        .Include(x => x.TrainingRotations)
+                        .ToListAsync();
+
+
+                doctorDictionary =
+                    existingDoctors
+                        .Where(x =>
+                            !string.IsNullOrWhiteSpace(
+                                x.رقم_الطبيب))
+                        .GroupBy(
+                            x => x.رقم_الطبيب!.Trim(),
+                            StringComparer.OrdinalIgnoreCase)
+                        .ToDictionary(
+                            g => g.Key,
+                            g => g.First(),
+                            StringComparer.OrdinalIgnoreCase);
+
+
+                // =================================================
+                // 15. مزامنة تدريبات جميع الأطباء
+                // =================================================
+
+                foreach (var source in cleanDoctors)
+                {
+                    string doctorNumber =
+                        source.الرقم!.Trim();
+
+
+                    if (!doctorDictionary.TryGetValue(
+                        doctorNumber,
+                        out var doctor))
+                    {
+                        continue;
+                    }
 
 
                     // =================================================
-                    // مزامنة الجراحة
+                    // الجراحة
                     // =================================================
 
                     SyncRotation(
@@ -438,7 +592,7 @@ public async Task<IActionResult> CheckDoctors()
 
 
                     // =================================================
-                    // مزامنة الباطني
+                    // الباطني
                     // =================================================
 
                     SyncRotation(
@@ -453,7 +607,7 @@ public async Task<IActionResult> CheckDoctors()
 
 
                     // =================================================
-                    // مزامنة النسائية
+                    // النسائية
                     // =================================================
 
                     SyncRotation(
@@ -468,7 +622,7 @@ public async Task<IActionResult> CheckDoctors()
 
 
                     // =================================================
-                    // مزامنة الأطفال
+                    // الأطفال
                     // =================================================
 
                     SyncRotation(
@@ -483,7 +637,7 @@ public async Task<IActionResult> CheckDoctors()
 
 
                     // =================================================
-                    // مزامنة الطوارئ
+                    // الطوارئ
                     // =================================================
 
                     SyncRotation(
@@ -498,7 +652,7 @@ public async Task<IActionResult> CheckDoctors()
 
 
                     // =================================================
-                    // مزامنة الاختياري
+                    // الاختياري
                     // =================================================
 
                     SyncRotation(
@@ -513,18 +667,19 @@ public async Task<IActionResult> CheckDoctors()
                 }
 
 
-                // =====================================================
-                // حفظ تحديثات الأطباء والتدريبات
-                // =====================================================
+                // =================================================
+                // 16. حفظ التدريبات
+                // =================================================
 
                 await _context.SaveChangesAsync();
 
 
-                // =====================================================
-                // 9. تنظيف نهائي للتدريبات المكررة
+                // =================================================
+                // 17. تنظيف نهائي للتدريبات
                 //
-                // نفس الطبيب + نفس القسم = سجل واحد فقط
-                // =====================================================
+                // نفس الطبيب + نفس القسم
+                // يجب أن يكون له سجل واحد فقط.
+                // =================================================
 
                 var allRotations =
                     await _context.TrainingRotations
@@ -533,15 +688,13 @@ public async Task<IActionResult> CheckDoctors()
 
                 var duplicateRotations =
                     allRotations
-                        .GroupBy(x =>
-                            new
-                            {
-                                x.DoctorId,
-                                x.DepartmentId
-                            })
+                        .GroupBy(x => new
+                        {
+                            x.DoctorId,
+                            x.DepartmentId
+                        })
                         .Where(g => g.Count() > 1)
-                        .SelectMany(g =>
-                            g.Skip(1))
+                        .SelectMany(g => g.Skip(1))
                         .ToList();
 
 
@@ -556,52 +709,80 @@ public async Task<IActionResult> CheckDoctors()
                 }
 
 
-                await _context.SaveChangesAsync();
+                if (duplicateRotations.Count > 0)
+                {
+                    await _context.SaveChangesAsync();
+                }
 
 
-                // =====================================================
-                // 10. التحقق النهائي من عدد الأطباء
-                // =====================================================
+                // =================================================
+                // 18. قراءة النتائج النهائية
+                // =================================================
 
                 int finalDoctorsCount =
                     await _context.Doctors.CountAsync();
+
+
+                int finalDoctorsWithNumber =
+                    await _context.Doctors
+                        .CountAsync(x =>
+                            !string.IsNullOrWhiteSpace(
+                                x.رقم_الطبيب));
 
 
                 int finalRotationsCount =
                     await _context.TrainingRotations.CountAsync();
 
 
-                // =====================================================
-                // النتيجة
-                // =====================================================
+                // =================================================
+                // 19. فحص التكرارات النهائية
+                // =================================================
+
+                var finalDuplicateNumbers =
+                    await _context.Doctors
+                        .AsNoTracking()
+                        .Where(x =>
+                            !string.IsNullOrWhiteSpace(
+                                x.رقم_الطبيب))
+                        .GroupBy(
+                            x => x.رقم_الطبيب!.Trim(),
+                            StringComparer.OrdinalIgnoreCase)
+                        .Where(g => g.Count() > 1)
+                        .Select(g => g.Key)
+                        .ToListAsync();
+
+
+                bool doctorsMatch =
+                    finalDoctorsWithNumber ==
+                    cleanDoctors.Count
+                    &&
+                    finalDuplicateNumbers.Count == 0;
+
+
+                // =================================================
+                // 20. تأكيد العملية بالكامل
+                // =================================================
+
+                await transaction.CommitAsync();
+
+
+                // =================================================
+                // 21. النتيجة النهائية
+                // =================================================
 
                 return Ok(new
                 {
                     success = true,
 
                     message =
-                        "تمت المزامنة الكاملة والتنظيف بنجاح",
+                        doctorsMatch
+                            ? "تمت المزامنة الكاملة بنجاح وأصبح عدد الأطباء في HospitalWeb مطابقًا لبيانات Access."
+                            : "تمت المزامنة، لكن يوجد اختلاف يحتاج إلى فحص.",
 
-                    added =
-                        added,
 
-                    updated =
-                        updated,
-
-                    deleted =
-                        deleted,
-
-                    duplicateRemoved =
-                        duplicateRemoved,
-
-                    rotationsAdded =
-                        rotationsAdded,
-
-                    rotationsUpdated =
-                        rotationsUpdated,
-
-                    rotationsDeleted =
-                        rotationsDeleted,
+                    // ---------------------------------------------
+                    // Access
+                    // ---------------------------------------------
 
                     accessRecords =
                         doctors.Count,
@@ -612,15 +793,85 @@ public async Task<IActionResult> CheckDoctors()
                     uniqueAccessDoctors =
                         cleanDoctors.Count,
 
+
+                    // ---------------------------------------------
+                    // HospitalWeb
+                    // ---------------------------------------------
+
                     finalDoctors =
                         finalDoctorsCount,
 
+                    finalDoctorsWithNumber =
+                        finalDoctorsWithNumber,
+
                     finalRotations =
-                        finalRotationsCount
+                        finalRotationsCount,
+
+
+                    // ---------------------------------------------
+                    // الأطباء
+                    // ---------------------------------------------
+
+                    added =
+                        added,
+
+                    updated =
+                        updated,
+
+                    deleted =
+                        deleted,
+
+
+                    // ---------------------------------------------
+                    // التكرارات
+                    // ---------------------------------------------
+
+                    duplicateRemoved =
+                        duplicateRemoved,
+
+                    finalDuplicateNumbers =
+                        finalDuplicateNumbers.Count,
+
+
+                    // ---------------------------------------------
+                    // التدريبات
+                    // ---------------------------------------------
+
+                    rotationsAdded =
+                        rotationsAdded,
+
+                    rotationsUpdated =
+                        rotationsUpdated,
+
+                    rotationsDeleted =
+                        rotationsDeleted,
+
+
+                    // ---------------------------------------------
+                    // التحقق النهائي
+                    // ---------------------------------------------
+
+                    doctorsMatch =
+                        doctorsMatch
                 });
             }
             catch (Exception ex)
             {
+                // =================================================
+                // في حالة الخطأ:
+                // إلغاء كل تغييرات المزامنة
+                // =================================================
+
+                try
+                {
+                    await transaction.RollbackAsync();
+                }
+                catch
+                {
+                    // لا نفعل شيئًا إذا فشل Rollback
+                }
+
+
                 return StatusCode(
                     500,
                     new
@@ -628,7 +879,7 @@ public async Task<IActionResult> CheckDoctors()
                         success = false,
 
                         message =
-                            "حدث خطأ أثناء المزامنة",
+                            "حدث خطأ أثناء المزامنة، وتم إلغاء التغييرات.",
 
                         error =
                             ex.Message,
@@ -637,6 +888,88 @@ public async Task<IActionResult> CheckDoctors()
                             ex.InnerException?.Message
                     });
             }
+        }
+
+
+        // =========================================================
+        // التأكد من وجود الأقسام
+        //
+        // نستخدم IDs ثابتة للأقسام الستة.
+        // =========================================================
+
+        private async Task<List<Department>>
+            EnsureDepartmentsAsync()
+        {
+            var requiredDepartments =
+                new Dictionary<int, string>
+                {
+                    { 1, "الجراحة" },
+                    { 2, "الباطني" },
+                    { 3, "النسائية" },
+                    { 4, "الأطفال" },
+                    { 5, "الطوارئ" },
+                    { 6, "الاختياري" }
+                };
+
+
+            var departments =
+                await _context.Departments
+                    .ToListAsync();
+
+
+            bool changed = false;
+
+
+            foreach (var item
+                in requiredDepartments)
+            {
+                var department =
+                    departments.FirstOrDefault(
+                        x => x.Id == item.Key);
+
+
+                if (department == null)
+                {
+                    department =
+                        new Department
+                        {
+                            Id = item.Key,
+                            Name = item.Value
+                        };
+
+                    _context.Departments.Add(
+                        department);
+
+                    departments.Add(
+                        department);
+
+                    changed = true;
+                }
+                else if (department.Name != item.Value)
+                {
+                    // ---------------------------------------------
+                    // الأقسام الستة الأساسية ثابتة
+                    // ---------------------------------------------
+
+                    department.Name =
+                        item.Value;
+
+                    changed = true;
+                }
+            }
+
+
+            if (changed)
+            {
+                await _context.SaveChangesAsync();
+            }
+
+
+            return departments
+                .Where(x =>
+                    requiredDepartments.ContainsKey(x.Id))
+                .OrderBy(x => x.Id)
+                .ToList();
         }
 
 
@@ -654,6 +987,10 @@ public async Task<IActionResult> CheckDoctors()
             ref int rotationsUpdated,
             ref int rotationsDeleted)
         {
+            // =====================================================
+            // البحث عن القسم
+            // =====================================================
+
             var department =
                 departments.FirstOrDefault(
                     x =>
@@ -661,8 +998,14 @@ public async Task<IActionResult> CheckDoctors()
 
 
             if (department == null)
+            {
                 return;
+            }
 
+
+            // =====================================================
+            // تدريبات الطبيب لهذا القسم
+            // =====================================================
 
             var rotations =
                 doctor.TrainingRotations
@@ -674,7 +1017,8 @@ public async Task<IActionResult> CheckDoctors()
 
             // =====================================================
             // لا توجد تواريخ في Access
-            // نحذف تدريب هذا القسم
+            //
+            // إذن يجب عدم وجود تدريب لهذا القسم في Web.
             // =====================================================
 
             if (!startDate.HasValue ||
@@ -683,8 +1027,8 @@ public async Task<IActionResult> CheckDoctors()
                 foreach (var rotation
                     in rotations)
                 {
-                    _context.TrainingRotations
-                        .Remove(rotation);
+                    _context.TrainingRotations.Remove(
+                        rotation);
 
                     rotationsDeleted++;
                 }
@@ -694,7 +1038,9 @@ public async Task<IActionResult> CheckDoctors()
 
 
             // =====================================================
-            // لا يوجد تدريب سابق
+            // يوجد أكثر من تدريب لنفس القسم
+            //
+            // نحتفظ بأول سجل ونحذف الباقي.
             // =====================================================
 
             TrainingRotation? currentRotation =
@@ -703,6 +1049,10 @@ public async Task<IActionResult> CheckDoctors()
 
             if (currentRotation == null)
             {
+                // =================================================
+                // إنشاء تدريب جديد
+                // =================================================
+
                 currentRotation =
                     new TrainingRotation
                     {
@@ -720,29 +1070,46 @@ public async Task<IActionResult> CheckDoctors()
                     };
 
 
-                _context.TrainingRotations
-                    .Add(currentRotation);
+                _context.TrainingRotations.Add(
+                    currentRotation);
 
                 rotationsAdded++;
             }
             else
             {
                 // =================================================
-                // تحديث التواريخ
+                // تحديث تاريخ البداية
                 // =================================================
 
+                bool changed = false;
+
+
                 if (currentRotation.StartDate !=
-                    startDate.Value
-                    ||
-                    currentRotation.EndDate !=
-                    endDate.Value)
+                    startDate.Value)
                 {
                     currentRotation.StartDate =
                         startDate.Value;
 
+                    changed = true;
+                }
+
+
+                // =================================================
+                // تحديث تاريخ النهاية
+                // =================================================
+
+                if (currentRotation.EndDate !=
+                    endDate.Value)
+                {
                     currentRotation.EndDate =
                         endDate.Value;
 
+                    changed = true;
+                }
+
+
+                if (changed)
+                {
                     rotationsUpdated++;
                 }
 
@@ -754,8 +1121,8 @@ public async Task<IActionResult> CheckDoctors()
                 foreach (var duplicate
                     in rotations.Skip(1))
                 {
-                    _context.TrainingRotations
-                        .Remove(duplicate);
+                    _context.TrainingRotations.Remove(
+                        duplicate);
 
                     rotationsDeleted++;
                 }
@@ -764,12 +1131,21 @@ public async Task<IActionResult> CheckDoctors()
 
 
         // =========================================================
-        // Model استقبال البيانات من VB.NET
+        // Model استقبال البيانات من Visual Basic
         // =========================================================
 
         public class DoctorSyncModel
         {
+            // -----------------------------------------------------
+            // الرقم الأساسي للطبيب
+            // -----------------------------------------------------
+
             public string? الرقم { get; set; }
+
+
+            // -----------------------------------------------------
+            // بيانات الطبيب
+            // -----------------------------------------------------
 
             public string? الاسم { get; set; }
 
@@ -778,40 +1154,72 @@ public async Task<IActionResult> CheckDoctors()
             public DateTime? تاريخ_المباشرة { get; set; }
 
 
+            // -----------------------------------------------------
+            // الجراحة
+            // -----------------------------------------------------
+
             public DateTime? الجراحة_مباشرة { get; set; }
 
             public DateTime? الجراحة_انتهاء { get; set; }
 
+
+            // -----------------------------------------------------
+            // الباطني
+            // -----------------------------------------------------
 
             public DateTime? الباطني_مباشرة { get; set; }
 
             public DateTime? الباطني_انتهاء { get; set; }
 
 
+            // -----------------------------------------------------
+            // النسائية
+            // -----------------------------------------------------
+
             public DateTime? النسائية_مباشرة { get; set; }
 
             public DateTime? النسائية_انتهاء { get; set; }
 
+
+            // -----------------------------------------------------
+            // الأطفال
+            // -----------------------------------------------------
 
             public DateTime? الاطفال_مباشرة { get; set; }
 
             public DateTime? الاطفال_انتهاء { get; set; }
 
 
+            // -----------------------------------------------------
+            // الطوارئ
+            // -----------------------------------------------------
+
             public DateTime? الطوارئ_مباشرة { get; set; }
 
             public DateTime? الطوارئ_انتهاء { get; set; }
 
+
+            // -----------------------------------------------------
+            // الاختياري
+            // -----------------------------------------------------
 
             public DateTime? الاختياري_مباشرة { get; set; }
 
             public DateTime? الاختياري_انتهاء { get; set; }
 
 
+            // -----------------------------------------------------
+            // الصورة
+            // -----------------------------------------------------
+
             public string? ImagePath { get; set; }
+
+
+            // -----------------------------------------------------
+            // الهاتف
+            // -----------------------------------------------------
 
             public string? Phone { get; set; }
         }
     }
 }
-
