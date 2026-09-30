@@ -5,30 +5,37 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace HospitalWeb.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260729161824_AddDefaultDepartments")]
-    partial class AddDefaultDepartments
+    [Migration("20260930220858_InitialPostgreSql")]
+    partial class InitialPostgreSql
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.18");
+            modelBuilder
+                .HasAnnotation("ProductVersion", "9.0.18")
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("HospitalWeb.Models.Department", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -71,44 +78,61 @@ namespace HospitalWeb.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ImagePath")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("text")
                         .HasColumnName("ImagePath");
 
                     b.Property<string>("Phone")
-                        .HasColumnType("TEXT")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("Phone");
 
                     b.Property<string>("الاسم")
                         .IsRequired()
-                        .HasColumnType("TEXT")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("الاسم");
 
                     b.Property<string>("الجامعة")
-                        .HasColumnType("TEXT")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("الجامعة");
 
                     b.Property<string>("الجنس")
-                        .HasColumnType("TEXT")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
                         .HasColumnName("الجنس");
 
                     b.Property<string>("الرقم_الوطني")
-                        .HasColumnType("TEXT")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("الرقم_الوطني");
 
+                    b.Property<DateTime?>("تاريخ_المباشرة")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("تاريخ_المباشرة");
+
                     b.Property<DateTime?>("تاريخ_الميلاد")
-                        .HasColumnType("TEXT")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("تاريخ_الميلاد");
 
                     b.Property<string>("رقم_الطبيب")
-                        .HasColumnType("TEXT")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("رقم_الطبيب");
 
                     b.Property<int?>("سنة_التخرج")
-                        .HasColumnType("INTEGER")
+                        .HasColumnType("integer")
                         .HasColumnName("سنة_التخرج");
+
+                    b.Property<string>("مكان_المباشرة")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("مكان_المباشرة");
 
                     b.HasKey("Id");
 
@@ -119,25 +143,28 @@ namespace HospitalWeb.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("DepartmentId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<int>("DoctorId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("EndDate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
                     b.HasIndex("DepartmentId");
 
-                    b.HasIndex("DoctorId");
+                    b.HasIndex("DoctorId", "DepartmentId")
+                        .IsUnique();
 
                     b.ToTable("TrainingRotations");
                 });

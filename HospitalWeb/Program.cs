@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 
 // =====================================
-// Render inotify Fix
+// Render file watcher fix
 // =====================================
 
 Environment.SetEnvironmentVariable(
@@ -13,7 +13,7 @@ Environment.SetEnvironmentVariable(
 
 
 // =====================================
-// Web Application Options
+// Web options
 // =====================================
 
 var options = new WebApplicationOptions
@@ -28,7 +28,7 @@ var builder = WebApplication.CreateBuilder(options);
 
 
 // =====================================
-// Disable Configuration File Watching
+// Configuration
 // =====================================
 
 builder.Configuration.Sources.Clear();
@@ -41,7 +41,7 @@ builder.Configuration.AddJsonFile(
 
 
 // =====================================
-// Render PORT
+// PORT
 // =====================================
 
 var port =
@@ -55,99 +55,41 @@ builder.WebHost.UseUrls(
 
 
 // =====================================
-// MVC + API Controllers
+// MVC
 // =====================================
 
 builder.Services.AddControllersWithViews();
 
 
 // =====================================
-// SQLite Database
+// Neon PostgreSQL
 // =====================================
 
-string rootPath =
-    Directory.GetCurrentDirectory();
+var connectionString =
+    Environment.GetEnvironmentVariable(
+        "ConnectionStrings__DefaultConnection"
+    )
+    ??
+    builder.Configuration
+        .GetConnectionString("DefaultConnection");
 
-
-string appDataPath =
-    Path.Combine(
-        rootPath,
-        "App_Data"
-    );
-
-
-if (!Directory.Exists(appDataPath))
-{
-    Directory.CreateDirectory(appDataPath);
-}
-
-
-string dbPath =
-    Path.Combine(
-        appDataPath,
-        "hospital.db"
-    );
-
-
-// =====================================
-// Logs
-// =====================================
-
-Console.WriteLine("====================================");
-
-Console.WriteLine(
-    "Environment = " +
-    builder.Environment.EnvironmentName
-);
-
-
-Console.WriteLine(
-    "Content Root = " +
-    rootPath
-);
-
-
-Console.WriteLine(
-    "Database Path = " +
-    dbPath
-);
-
-
-Console.WriteLine(
-    "Database Exists = " +
-    File.Exists(dbPath)
-);
-
-
-if (File.Exists(dbPath))
-{
-    Console.WriteLine(
-        "Database Size = " +
-        new FileInfo(dbPath).Length +
-        " bytes"
-    );
-}
-
-
-Console.WriteLine(
-    "PORT = " +
-    port
-);
 
 
 Console.WriteLine("====================================");
+Console.WriteLine("Database Provider = PostgreSQL / Neon");
+Console.WriteLine(
+    "Connection String Configured = "
+    + (!string.IsNullOrEmpty(connectionString))
+);
+Console.WriteLine("PORT = " + port);
+Console.WriteLine("====================================");
 
 
-// =====================================
-// Entity Framework SQLite
-// =====================================
 
 builder.Services.AddDbContext<ApplicationDbContext>(
     options =>
     {
-        options.UseSqlite(
-            $"Data Source={dbPath}"
-        );
+        options.UseNpgsql(connectionString);
     }
 );
 
@@ -167,7 +109,7 @@ var app = builder.Build();
 
 
 // =====================================
-// Database Test
+// Database test
 // =====================================
 
 using (var scope = app.Services.CreateScope())
@@ -176,50 +118,45 @@ using (var scope = app.Services.CreateScope())
     {
         var db =
             scope.ServiceProvider
-                .GetRequiredService<ApplicationDbContext>();
-
+            .GetRequiredService<ApplicationDbContext>();
 
         Console.WriteLine(
-            "Database Connected = " +
-            db.Database.CanConnect()
+            "Database Connected = "
+            + db.Database.CanConnect()
         );
 
-
         Console.WriteLine(
-            "Doctors Count = " +
-            db.Doctors.Count()
+            "Doctors Count = "
+            + db.Doctors.Count()
         );
 
-
         Console.WriteLine(
-            "Training Count = " +
-            db.TrainingRotations.Count()
+            "Training Count = "
+            + db.TrainingRotations.Count()
         );
 
-
         Console.WriteLine(
-            "Departments Count = " +
-            db.Departments.Count()
+            "Departments Count = "
+            + db.Departments.Count()
         );
     }
     catch (Exception ex)
     {
         Console.WriteLine(
-            "DATABASE ERROR = " +
-            ex
+            "DATABASE ERROR = "
+            + ex.Message
         );
     }
 }
 
 
 // =====================================
-// Production Error Handling
+// Error handling
 // =====================================
 
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-
     app.UseHsts();
 }
 
@@ -235,26 +172,17 @@ app.UseRouting();
 app.UseAuthorization();
 
 
-// =====================================
-// API Controllers
-// „Â„ Ãœ« ·‹ SyncController
-// =====================================
+// Sync API
 
 app.MapControllers();
 
 
-// =====================================
-// Default MVC Route
-// =====================================
+// MVC
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Doctors}/{action=Index}/{id?}"
 );
 
-
-// =====================================
-// Run
-// =====================================
 
 app.Run();
