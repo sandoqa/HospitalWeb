@@ -1,4 +1,5 @@
-﻿using HospitalWeb.Data;
+﻿
+using HospitalWeb.Data;
 using HospitalWeb.Models;
 
 using Microsoft.AspNetCore.Mvc;
@@ -12,9 +13,8 @@ namespace HospitalWeb.Controllers
     {
         private readonly ApplicationDbContext _context;
 
-
-    public SyncController(
-        ApplicationDbContext context)
+        public SyncController(
+            ApplicationDbContext context)
         {
             _context = context;
         }
@@ -53,6 +53,8 @@ namespace HospitalWeb.Controllers
                 int withoutNumber = doctors.Count(x =>
                     string.IsNullOrWhiteSpace(x.رقم_الطبيب));
 
+                // يتم تنفيذ GroupBy هنا في الذاكرة
+                // لأن doctors تم تحميلها بواسطة ToListAsync()
                 var duplicateNumbers = doctors
                     .Where(x =>
                         !string.IsNullOrWhiteSpace(x.رقم_الطبيب))
@@ -216,6 +218,9 @@ namespace HospitalWeb.Controllers
                 // 7. تنظيف التكرارات الموجودة في HospitalWeb
                 // =================================================
 
+                // GroupBy يتم هنا في الذاكرة لأن
+                // existingDoctors تم تحميلها بواسطة ToListAsync()
+
                 var duplicateDoctors =
                     existingDoctors
                         .Where(x =>
@@ -325,6 +330,8 @@ namespace HospitalWeb.Controllers
                 // =================================================
                 // 11. Dictionary للبحث السريع
                 // =================================================
+
+                // GroupBy هنا في الذاكرة
 
                 var doctorDictionary =
                     existingDoctors
@@ -620,20 +627,34 @@ namespace HospitalWeb.Controllers
 
                 // =================================================
                 // 19. فحص التكرارات النهائية
+                //
+                // مهم:
+                // لا نستخدم GroupBy + StringComparer داخل SQLite.
+                // نقوم أولاً بتحميل الأرقام إلى الذاكرة.
                 // =================================================
 
-                var finalDuplicateNumbers =
+                var finalDoctorNumbers =
                     await _context.Doctors
                         .AsNoTracking()
                         .Where(x =>
                             !string.IsNullOrWhiteSpace(
                                 x.رقم_الطبيب))
+                        .Select(x =>
+                            x.رقم_الطبيب!)
+                        .ToListAsync();
+
+
+                var finalDuplicateNumbers =
+                    finalDoctorNumbers
+                        .Select(x => x.Trim())
+                        .Where(x =>
+                            !string.IsNullOrWhiteSpace(x))
                         .GroupBy(
-                            x => x.رقم_الطبيب!.Trim(),
+                            x => x,
                             StringComparer.OrdinalIgnoreCase)
                         .Where(g => g.Count() > 1)
                         .Select(g => g.Key)
-                        .ToListAsync();
+                        .ToList();
 
 
                 bool doctorsMatch =
@@ -752,12 +773,12 @@ namespace HospitalWeb.Controllers
             var requiredDepartments =
                 new Dictionary<int, string>
                 {
-                { 1, "الجراحة" },
-                { 2, "الباطني" },
-                { 3, "النسائية" },
-                { 4, "الأطفال" },
-                { 5, "الطوارئ" },
-                { 6, "الاختياري" }
+                    { 1, "الجراحة" },
+                    { 2, "الباطني" },
+                    { 3, "النسائية" },
+                    { 4, "الأطفال" },
+                    { 5, "الطوارئ" },
+                    { 6, "الاختياري" }
                 };
 
 
@@ -981,6 +1002,4 @@ namespace HospitalWeb.Controllers
             public string? Phone { get; set; }
         }
     }
-
-
 }
