@@ -1,9 +1,11 @@
-﻿using HospitalWeb.Controllers;
+﻿
+using HospitalWeb.Controllers;
 using HospitalWeb.Data;
 using HospitalWeb.Models;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace HospitalWeb.Controllers
 {
@@ -12,10 +14,14 @@ namespace HospitalWeb.Controllers
     public class SyncController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<SyncController> _logger;
 
-        public SyncController(ApplicationDbContext context)
+        public SyncController(
+            ApplicationDbContext context,
+            ILogger<SyncController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
 
@@ -88,6 +94,10 @@ namespace HospitalWeb.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(
+                    ex,
+                    "❌ خطأ أثناء CheckDoctors");
+
                 return StatusCode(
                     500,
                     new
@@ -95,7 +105,9 @@ namespace HospitalWeb.Controllers
                         success = false,
                         error = ex.Message,
                         innerError =
-                            ex.InnerException?.Message
+                            ex.InnerException?.Message,
+                        type =
+                            ex.GetType().FullName
                     });
             }
         }
@@ -527,7 +539,7 @@ namespace HospitalWeb.Controllers
                 // 13. حفظ الأطباء
                 //
                 // مهم جدًا:
-                // نحفظ قبل مزامنة التدريبات حتى تحصل الأطباء
+                // نحفظ قبل مزامنة التدريبات حتى يحصل الأطباء
                 // الجدد على Id من قاعدة البيانات.
                 // =================================================
 
@@ -767,6 +779,23 @@ namespace HospitalWeb.Controllers
 
 
                 // =================================================
+                // تسجيل نجاح المزامنة في Render
+                // =================================================
+
+                _logger.LogInformation(
+                    "✅ SYNC SUCCESS - Access Records: {AccessRecords}, Unique Doctors: {UniqueDoctors}, Final Doctors: {FinalDoctors}, Added: {Added}, Updated: {Updated}, Deleted: {Deleted}, Rotations Added: {RotationsAdded}, Rotations Updated: {RotationsUpdated}, Rotations Deleted: {RotationsDeleted}",
+                    doctors.Count,
+                    cleanDoctors.Count,
+                    finalDoctorsCount,
+                    added,
+                    updated,
+                    deleted,
+                    rotationsAdded,
+                    rotationsUpdated,
+                    rotationsDeleted);
+
+
+                // =================================================
                 // 21. النتيجة النهائية
                 // =================================================
 
@@ -866,11 +895,47 @@ namespace HospitalWeb.Controllers
                 {
                     await transaction.RollbackAsync();
                 }
-                catch
+                catch (Exception rollbackEx)
                 {
-                    // لا نفعل شيئًا إذا فشل Rollback
+                    _logger.LogError(
+                        rollbackEx,
+                        "❌ فشل Rollback أثناء مزامنة HospitalWeb");
                 }
 
+
+                // =================================================
+                // تسجيل الخطأ الحقيقي في Render
+                // =================================================
+
+                _logger.LogError(
+                    ex,
+                    "❌ SYNC ERROR - فشلت مزامنة بيانات الأطباء من Access");
+
+
+                // =================================================
+                // جمع جميع Inner Exceptions
+                // =================================================
+
+                var innerErrors =
+                    new List<string>();
+
+
+                Exception? currentException = ex;
+
+
+                while (currentException != null)
+                {
+                    innerErrors.Add(
+                        $"{currentException.GetType().FullName}: {currentException.Message}");
+
+                    currentException =
+                        currentException.InnerException;
+                }
+
+
+                // =================================================
+                // إرجاع الخطأ إلى Visual Basic
+                // =================================================
 
                 return StatusCode(
                     500,
@@ -879,13 +944,19 @@ namespace HospitalWeb.Controllers
                         success = false,
 
                         message =
-                            "حدث خطأ أثناء المزامنة، وتم إلغاء التغييرات.",
+                            "حدث خطأ أثناء المزامنة، وتم إلغاء جميع التغييرات.",
 
                         error =
                             ex.Message,
 
+                        type =
+                            ex.GetType().FullName,
+
                         innerError =
-                            ex.InnerException?.Message
+                            ex.InnerException?.Message,
+
+                        innerErrors =
+                            innerErrors
                     });
             }
         }
@@ -937,11 +1008,14 @@ namespace HospitalWeb.Controllers
                             Name = item.Value
                         };
 
+
                     _context.Departments.Add(
                         department);
 
+
                     departments.Add(
                         department);
+
 
                     changed = true;
                 }
@@ -1223,3 +1297,4 @@ namespace HospitalWeb.Controllers
         }
     }
 }
+
