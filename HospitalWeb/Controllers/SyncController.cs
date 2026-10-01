@@ -1,7 +1,7 @@
 ﻿
+using DocumentFormat.OpenXml.Spreadsheet;
 using HospitalWeb.Data;
 using HospitalWeb.Models;
-
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,15 +13,13 @@ namespace HospitalWeb.Controllers
     {
         private readonly ApplicationDbContext _context;
 
-        public SyncController(
-            ApplicationDbContext context)
+        public SyncController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-
         // =========================================================
-        // اختبار الاتصال
+        // اختبار API
         // =========================================================
 
         [HttpGet("Test")]
@@ -30,9 +28,8 @@ namespace HospitalWeb.Controllers
             return Ok("Hospital Sync API يعمل بنجاح");
         }
 
-
         // =========================================================
-        // فحص الأطباء الموجودين في HospitalWeb
+        // فحص الأطباء
         // =========================================================
 
         [HttpGet("CheckDoctors")]
@@ -45,16 +42,6 @@ namespace HospitalWeb.Controllers
                     .OrderBy(x => x.رقم_الطبيب)
                     .ToListAsync();
 
-                int total = doctors.Count;
-
-                int withNumber = doctors.Count(x =>
-                    !string.IsNullOrWhiteSpace(x.رقم_الطبيب));
-
-                int withoutNumber = doctors.Count(x =>
-                    string.IsNullOrWhiteSpace(x.رقم_الطبيب));
-
-                // يتم تنفيذ GroupBy هنا في الذاكرة
-                // لأن doctors تم تحميلها بواسطة ToListAsync()
                 var duplicateNumbers = doctors
                     .Where(x =>
                         !string.IsNullOrWhiteSpace(x.رقم_الطبيب))
@@ -66,9 +53,7 @@ namespace HospitalWeb.Controllers
                     {
                         Number = g.Key,
                         Count = g.Count(),
-                        Names = g
-                            .Select(x => x.الاسم)
-                            .ToList()
+                        Names = g.Select(x => x.الاسم).ToList()
                     })
                     .ToList();
 
@@ -76,17 +61,23 @@ namespace HospitalWeb.Controllers
                 {
                     success = true,
 
-                    totalDoctors = total,
+                    totalDoctors =
+                        doctors.Count,
 
-                    doctorsWithNumber = withNumber,
+                    doctorsWithNumber =
+                        doctors.Count(x =>
+                            !string.IsNullOrWhiteSpace(
+                                x.رقم_الطبيب)),
 
-                    doctorsWithoutNumber = withoutNumber,
+                    doctorsWithoutNumber =
+                        doctors.Count(x =>
+                            string.IsNullOrWhiteSpace(
+                                x.رقم_الطبيب)),
 
                     duplicateNumbersCount =
                         duplicateNumbers.Count,
 
-                    duplicateNumbers =
-                        duplicateNumbers
+                    duplicateNumbers
                 });
             }
             catch (Exception ex)
@@ -97,53 +88,35 @@ namespace HospitalWeb.Controllers
                     {
                         success = false,
                         error = ex.Message,
-                        innerError =
-                            ex.InnerException?.Message,
-                        type =
-                            ex.GetType().FullName
+                        innerError = ex.InnerException?.Message,
+                        type = ex.GetType().FullName
                     });
             }
         }
 
-
         // =========================================================
-        // استقبال المزامنة الكاملة
-        //
-        // المصدر الرئيسي:
-        // Visual Basic / Access
-        //
-        // HospitalWeb = نسخة من بيانات Access
+        // استقبال المزامنة
         // =========================================================
 
         [HttpPost("Receive")]
         [IgnoreAntiforgeryToken]
         public async Task<IActionResult> Receive(
-            [FromBody] List<DoctorSyncModel> doctors)
+            [FromBody] List<DoctorSyncModel>? doctors)
         {
+            if (doctors == null)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "بيانات المزامنة غير صالحة."
+                });
+            }
+
             await using var transaction =
                 await _context.Database.BeginTransactionAsync();
 
             try
             {
-                // =================================================
-                // 1. التحقق من البيانات
-                // =================================================
-
-                if (doctors == null || doctors.Count == 0)
-                {
-                    return BadRequest(new
-                    {
-                        success = false,
-                        message =
-                            "لا توجد بيانات للمزامنة."
-                    });
-                }
-
-
-                // =================================================
-                // العدادات
-                // =================================================
-
                 int added = 0;
                 int updated = 0;
                 int deleted = 0;
@@ -154,9 +127,8 @@ namespace HospitalWeb.Controllers
                 int rotationsUpdated = 0;
                 int rotationsDeleted = 0;
 
-
                 // =================================================
-                // 2. تنظيف بيانات Access
+                // السجلات الصالحة
                 // =================================================
 
                 var validDoctors =
@@ -166,9 +138,8 @@ namespace HospitalWeb.Controllers
                                 x.الرقم))
                         .ToList();
 
-
                 // =================================================
-                // 3. إزالة التكرار من Access
+                // إزالة تكرارات Access
                 // =================================================
 
                 var cleanDoctors =
@@ -179,14 +150,12 @@ namespace HospitalWeb.Controllers
                         .Select(g => g.First())
                         .ToList();
 
-
                 duplicateRemoved +=
                     validDoctors.Count -
                     cleanDoctors.Count;
 
-
                 // =================================================
-                // 4. إنشاء مجموعة أرقام Access
+                // أرقام Access
                 // =================================================
 
                 var accessDoctorNumbers =
@@ -195,31 +164,26 @@ namespace HospitalWeb.Controllers
                         .ToHashSet(
                             StringComparer.OrdinalIgnoreCase);
 
-
                 // =================================================
-                // 5. التأكد من وجود الأقسام الستة
+                // الأقسام
                 // =================================================
 
                 var departments =
                     await EnsureDepartmentsAsync();
 
-
                 // =================================================
-                // 6. قراءة جميع الأطباء الموجودين في HospitalWeb
+                // الأطباء الموجودون
                 // =================================================
 
                 var existingDoctors =
                     await _context.Doctors
-                        .Include(x => x.TrainingRotations)
+                        .Include(x =>
+                            x.TrainingRotations)
                         .ToListAsync();
 
-
                 // =================================================
-                // 7. تنظيف التكرارات الموجودة في HospitalWeb
+                // إزالة أطباء Neon المكررين
                 // =================================================
-
-                // GroupBy يتم هنا في الذاكرة لأن
-                // existingDoctors تم تحميلها بواسطة ToListAsync()
 
                 var duplicateDoctors =
                     existingDoctors
@@ -233,49 +197,48 @@ namespace HospitalWeb.Controllers
                         .SelectMany(g => g.Skip(1))
                         .ToList();
 
-
-                foreach (var duplicateDoctor
-                    in duplicateDoctors)
+                foreach (var duplicateDoctor in
+                         duplicateDoctors)
                 {
-                    if (duplicateDoctor.TrainingRotations != null &&
-                        duplicateDoctor.TrainingRotations.Count > 0)
+                    if (duplicateDoctor.TrainingRotations != null)
                     {
-                        foreach (var rotation
-                            in duplicateDoctor.TrainingRotations.ToList())
+                        foreach (var rotation in
+                                 duplicateDoctor.TrainingRotations.ToList())
                         {
-                            _context.TrainingRotations.Remove(
-                                rotation);
+                            _context.TrainingRotations
+                                .Remove(rotation);
 
                             rotationsDeleted++;
                         }
                     }
 
-                    _context.Doctors.Remove(
-                        duplicateDoctor);
+                    _context.Doctors
+                        .Remove(duplicateDoctor);
 
                     duplicateRemoved++;
                     deleted++;
                 }
 
-
                 if (duplicateDoctors.Count > 0)
                 {
-                    await _context.SaveChangesAsync();
+                    PrepareDatesForPostgreSql();
+
+                    await SaveChangesSafeAsync(
+                        "حذف الأطباء المكررين");
                 }
 
-
                 // =================================================
-                // 8. إعادة قراءة الأطباء بعد تنظيف التكرارات
+                // إعادة قراءة الأطباء
                 // =================================================
 
                 existingDoctors =
                     await _context.Doctors
-                        .Include(x => x.TrainingRotations)
+                        .Include(x =>
+                            x.TrainingRotations)
                         .ToListAsync();
 
-
                 // =================================================
-                // 9. حذف الأطباء غير الموجودين في Access
+                // حذف الموجود في Neon وغير الموجود في Access
                 // =================================================
 
                 var doctorsToDelete =
@@ -285,53 +248,51 @@ namespace HospitalWeb.Controllers
                                 x.رقم_الطبيب)
                             ||
                             !accessDoctorNumbers.Contains(
-                                x.رقم_الطبيب.Trim()))
+                                x.رقم_الطبيب!.Trim()))
                         .ToList();
 
-
-                foreach (var doctor
-                    in doctorsToDelete)
+                foreach (var doctor in
+                         doctorsToDelete)
                 {
-                    if (doctor.TrainingRotations != null &&
-                        doctor.TrainingRotations.Count > 0)
+                    if (doctor.TrainingRotations != null)
                     {
-                        foreach (var rotation
-                            in doctor.TrainingRotations.ToList())
+                        foreach (var rotation in
+                                 doctor.TrainingRotations.ToList())
                         {
-                            _context.TrainingRotations.Remove(
-                                rotation);
+                            _context.TrainingRotations
+                                .Remove(rotation);
 
                             rotationsDeleted++;
                         }
                     }
 
-                    _context.Doctors.Remove(doctor);
+                    _context.Doctors
+                        .Remove(doctor);
 
                     deleted++;
                 }
 
-
                 if (doctorsToDelete.Count > 0)
                 {
-                    await _context.SaveChangesAsync();
+                    PrepareDatesForPostgreSql();
+
+                    await SaveChangesSafeAsync(
+                        "حذف الأطباء غير الموجودين في Access");
                 }
 
-
                 // =================================================
-                // 10. إعادة قراءة الأطباء بعد الحذف
+                // إعادة القراءة
                 // =================================================
 
                 existingDoctors =
                     await _context.Doctors
-                        .Include(x => x.TrainingRotations)
+                        .Include(x =>
+                            x.TrainingRotations)
                         .ToListAsync();
 
-
                 // =================================================
-                // 11. Dictionary للبحث السريع
+                // Dictionary
                 // =================================================
-
-                // GroupBy هنا في الذاكرة
 
                 var doctorDictionary =
                     existingDoctors
@@ -346,9 +307,8 @@ namespace HospitalWeb.Controllers
                             g => g.First(),
                             StringComparer.OrdinalIgnoreCase);
 
-
                 // =================================================
-                // 12. معالجة أطباء Access
+                // إضافة / تحديث الأطباء
                 // =================================================
 
                 foreach (var source in cleanDoctors)
@@ -356,12 +316,17 @@ namespace HospitalWeb.Controllers
                     string doctorNumber =
                         source.الرقم!.Trim();
 
-                    Doctor? doctor = null;
+                    DateTime? startDate =
+                        ToUtcDate(
+                            source.تاريخ_المباشرة);
 
                     doctorDictionary.TryGetValue(
                         doctorNumber,
-                        out doctor);
+                        out Doctor? doctor);
 
+                    // =================================================
+                    // إضافة
+                    // =================================================
 
                     if (doctor == null)
                     {
@@ -378,7 +343,7 @@ namespace HospitalWeb.Controllers
                                     source.مكان_المباشرة,
 
                                 تاريخ_المباشرة =
-                                    source.تاريخ_المباشرة,
+                                    startDate,
 
                                 Phone =
                                     source.Phone,
@@ -395,6 +360,11 @@ namespace HospitalWeb.Controllers
 
                         added++;
                     }
+
+                    // =================================================
+                    // تحديث
+                    // =================================================
+
                     else
                     {
                         bool changed = false;
@@ -420,10 +390,10 @@ namespace HospitalWeb.Controllers
                         }
 
                         if (doctor.تاريخ_المباشرة !=
-                            source.تاريخ_المباشرة)
+                            startDate)
                         {
                             doctor.تاريخ_المباشرة =
-                                source.تاريخ_المباشرة;
+                                startDate;
 
                             changed = true;
                         }
@@ -453,23 +423,28 @@ namespace HospitalWeb.Controllers
                     }
                 }
 
+                // =================================================
+                // تجهيز التواريخ
+                // =================================================
+
+                PrepareDatesForPostgreSql();
 
                 // =================================================
-                // 13. حفظ الأطباء
+                // حفظ الأطباء
                 // =================================================
 
-                await _context.SaveChangesAsync();
-
+                await SaveChangesSafeAsync(
+                    "إضافة وتحديث الأطباء");
 
                 // =================================================
-                // 14. إعادة تحميل الأطباء والتدريبات
+                // إعادة قراءة الأطباء
                 // =================================================
 
                 existingDoctors =
                     await _context.Doctors
-                        .Include(x => x.TrainingRotations)
+                        .Include(x =>
+                            x.TrainingRotations)
                         .ToListAsync();
-
 
                 doctorDictionary =
                     existingDoctors
@@ -484,9 +459,8 @@ namespace HospitalWeb.Controllers
                             g => g.First(),
                             StringComparer.OrdinalIgnoreCase);
 
-
                 // =================================================
-                // 15. مزامنة تدريبات جميع الأطباء
+                // مزامنة التدريب
                 // =================================================
 
                 foreach (var source in cleanDoctors)
@@ -501,6 +475,10 @@ namespace HospitalWeb.Controllers
                         continue;
                     }
 
+                    // ------------------------------------------------
+                    // الجراحة
+                    // ------------------------------------------------
+
                     SyncRotation(
                         doctor,
                         "الجراحة",
@@ -510,6 +488,10 @@ namespace HospitalWeb.Controllers
                         ref rotationsAdded,
                         ref rotationsUpdated,
                         ref rotationsDeleted);
+
+                    // ------------------------------------------------
+                    // الباطني
+                    // ------------------------------------------------
 
                     SyncRotation(
                         doctor,
@@ -521,6 +503,10 @@ namespace HospitalWeb.Controllers
                         ref rotationsUpdated,
                         ref rotationsDeleted);
 
+                    // ------------------------------------------------
+                    // النسائية
+                    // ------------------------------------------------
+
                     SyncRotation(
                         doctor,
                         "النسائية",
@@ -530,6 +516,10 @@ namespace HospitalWeb.Controllers
                         ref rotationsAdded,
                         ref rotationsUpdated,
                         ref rotationsDeleted);
+
+                    // ------------------------------------------------
+                    // الأطفال
+                    // ------------------------------------------------
 
                     SyncRotation(
                         doctor,
@@ -541,6 +531,10 @@ namespace HospitalWeb.Controllers
                         ref rotationsUpdated,
                         ref rotationsDeleted);
 
+                    // ------------------------------------------------
+                    // الطوارئ
+                    // ------------------------------------------------
+
                     SyncRotation(
                         doctor,
                         "الطوارئ",
@@ -550,6 +544,10 @@ namespace HospitalWeb.Controllers
                         ref rotationsAdded,
                         ref rotationsUpdated,
                         ref rotationsDeleted);
+
+                    // ------------------------------------------------
+                    // الاختياري
+                    // ------------------------------------------------
 
                     SyncRotation(
                         doctor,
@@ -562,22 +560,26 @@ namespace HospitalWeb.Controllers
                         ref rotationsDeleted);
                 }
 
+                // =================================================
+                // تجهيز التواريخ
+                // =================================================
+
+                PrepareDatesForPostgreSql();
 
                 // =================================================
-                // 16. حفظ التدريبات
+                // حفظ التدريب
                 // =================================================
 
-                await _context.SaveChangesAsync();
-
+                await SaveChangesSafeAsync(
+                    "مزامنة دورات التدريب");
 
                 // =================================================
-                // 17. تنظيف نهائي للتدريبات
+                // فحص التكرارات النهائية
                 // =================================================
 
                 var allRotations =
                     await _context.TrainingRotations
                         .ToListAsync();
-
 
                 var duplicateRotations =
                     allRotations
@@ -590,50 +592,42 @@ namespace HospitalWeb.Controllers
                         .SelectMany(g => g.Skip(1))
                         .ToList();
 
-
-                foreach (var rotation
-                    in duplicateRotations)
+                foreach (var rotation in
+                         duplicateRotations)
                 {
-                    _context.TrainingRotations.Remove(
-                        rotation);
+                    _context.TrainingRotations
+                        .Remove(rotation);
 
                     duplicateRemoved++;
                     rotationsDeleted++;
                 }
 
-
                 if (duplicateRotations.Count > 0)
                 {
-                    await _context.SaveChangesAsync();
+                    PrepareDatesForPostgreSql();
+
+                    await SaveChangesSafeAsync(
+                        "حذف دورات التدريب المكررة");
                 }
 
-
                 // =================================================
-                // 18. قراءة النتائج النهائية
+                // النتائج النهائية
                 // =================================================
 
-                int finalDoctorsCount =
+                int finalDoctors =
                     await _context.Doctors.CountAsync();
 
                 int finalDoctorsWithNumber =
-                    await _context.Doctors
-                        .CountAsync(x =>
+                    await _context.Doctors.CountAsync(
+                        x =>
                             !string.IsNullOrWhiteSpace(
                                 x.رقم_الطبيب));
 
-                int finalRotationsCount =
-                    await _context.TrainingRotations.CountAsync();
+                int finalRotations =
+                    await _context.TrainingRotations
+                        .CountAsync();
 
-
-                // =================================================
-                // 19. فحص التكرارات النهائية
-                //
-                // مهم:
-                // لا نستخدم GroupBy + StringComparer داخل SQLite.
-                // نقوم أولاً بتحميل الأرقام إلى الذاكرة.
-                // =================================================
-
-                var finalDoctorNumbers =
+                var finalNumbers =
                     await _context.Doctors
                         .AsNoTracking()
                         .Where(x =>
@@ -643,12 +637,9 @@ namespace HospitalWeb.Controllers
                             x.رقم_الطبيب!)
                         .ToListAsync();
 
-
                 var finalDuplicateNumbers =
-                    finalDoctorNumbers
+                    finalNumbers
                         .Select(x => x.Trim())
-                        .Where(x =>
-                            !string.IsNullOrWhiteSpace(x))
                         .GroupBy(
                             x => x,
                             StringComparer.OrdinalIgnoreCase)
@@ -656,23 +647,20 @@ namespace HospitalWeb.Controllers
                         .Select(g => g.Key)
                         .ToList();
 
-
                 bool doctorsMatch =
                     finalDoctorsWithNumber ==
                     cleanDoctors.Count
                     &&
                     finalDuplicateNumbers.Count == 0;
 
-
                 // =================================================
-                // 20. تأكيد العملية بالكامل
+                // Commit
                 // =================================================
 
                 await transaction.CommitAsync();
 
-
                 // =================================================
-                // 21. النتيجة النهائية
+                // النتيجة
                 // =================================================
 
                 return Ok(new
@@ -681,8 +669,8 @@ namespace HospitalWeb.Controllers
 
                     message =
                         doctorsMatch
-                            ? "تمت المزامنة الكاملة بنجاح وأصبح عدد الأطباء في HospitalWeb مطابقًا لبيانات Access."
-                            : "تمت المزامنة، لكن يوجد اختلاف يحتاج إلى فحص.",
+                            ? "تمت المزامنة الكاملة بنجاح وأصبحت بيانات HospitalWeb مطابقة لبيانات Access."
+                            : "تمت المزامنة، ولكن يوجد اختلاف يحتاج إلى فحص.",
 
                     accessRecords =
                         doctors.Count,
@@ -694,13 +682,13 @@ namespace HospitalWeb.Controllers
                         cleanDoctors.Count,
 
                     finalDoctors =
-                        finalDoctorsCount,
+                        finalDoctors,
 
                     finalDoctorsWithNumber =
                         finalDoctorsWithNumber,
 
                     finalRotations =
-                        finalRotationsCount,
+                        finalRotations,
 
                     added =
                         added,
@@ -757,14 +745,16 @@ namespace HospitalWeb.Controllers
                             ex.GetType().FullName,
 
                         innerError =
-                            ex.InnerException?.Message
+                            ex.InnerException?.Message,
+
+                        innerInnerError =
+                            ex.InnerException?.InnerException?.Message
                     });
             }
         }
 
-
         // =========================================================
-        // التأكد من وجود الأقسام
+        // إنشاء الأقسام
         // =========================================================
 
         private async Task<List<Department>>
@@ -781,22 +771,17 @@ namespace HospitalWeb.Controllers
                     { 6, "الاختياري" }
                 };
 
-
             var departments =
                 await _context.Departments
                     .ToListAsync();
 
-
             bool changed = false;
 
-
-            foreach (var item
-                in requiredDepartments)
+            foreach (var item in requiredDepartments)
             {
                 var department =
                     departments.FirstOrDefault(
                         x => x.Id == item.Key);
-
 
                 if (department == null)
                 {
@@ -815,7 +800,8 @@ namespace HospitalWeb.Controllers
 
                     changed = true;
                 }
-                else if (department.Name != item.Value)
+                else if (department.Name !=
+                         item.Value)
                 {
                     department.Name =
                         item.Value;
@@ -824,23 +810,24 @@ namespace HospitalWeb.Controllers
                 }
             }
 
-
             if (changed)
             {
-                await _context.SaveChangesAsync();
-            }
+                PrepareDatesForPostgreSql();
 
+                await SaveChangesSafeAsync(
+                    "إنشاء الأقسام");
+            }
 
             return departments
                 .Where(x =>
-                    requiredDepartments.ContainsKey(x.Id))
+                    requiredDepartments.ContainsKey(
+                        x.Id))
                 .OrderBy(x => x.Id)
                 .ToList();
         }
 
-
         // =========================================================
-        // مزامنة تدريب واحد
+        // مزامنة دورة تدريب
         // =========================================================
 
         private void SyncRotation(
@@ -855,15 +842,12 @@ namespace HospitalWeb.Controllers
         {
             var department =
                 departments.FirstOrDefault(
-                    x =>
-                        x.Name == departmentName);
-
+                    x => x.Name == departmentName);
 
             if (department == null)
             {
                 return;
             }
-
 
             var rotations =
                 doctor.TrainingRotations
@@ -872,15 +856,17 @@ namespace HospitalWeb.Controllers
                         department.Id)
                     .ToList();
 
+            // =====================================================
+            // Access لا يحتوي على هذه الدورة
+            // =====================================================
 
             if (!startDate.HasValue ||
                 !endDate.HasValue)
             {
-                foreach (var rotation
-                    in rotations)
+                foreach (var rotation in rotations)
                 {
-                    _context.TrainingRotations.Remove(
-                        rotation);
+                    _context.TrainingRotations
+                        .Remove(rotation);
 
                     rotationsDeleted++;
                 }
@@ -888,10 +874,18 @@ namespace HospitalWeb.Controllers
                 return;
             }
 
+            DateTime newStartDate =
+                ToUtcDate(startDate)!.Value;
+
+            DateTime newEndDate =
+                ToUtcDate(endDate)!.Value;
+
+            // =====================================================
+            // إضافة
+            // =====================================================
 
             TrainingRotation? currentRotation =
                 rotations.FirstOrDefault();
-
 
             if (currentRotation == null)
             {
@@ -905,62 +899,197 @@ namespace HospitalWeb.Controllers
                             department.Id,
 
                         StartDate =
-                            startDate.Value,
+                            newStartDate,
 
                         EndDate =
-                            endDate.Value
+                            newEndDate
                     };
 
-                _context.TrainingRotations.Add(
-                    currentRotation);
+                _context.TrainingRotations
+                    .Add(currentRotation);
 
                 rotationsAdded++;
             }
+
+            // =====================================================
+            // تحديث
+            // =====================================================
+
             else
             {
                 bool changed = false;
 
-
                 if (currentRotation.StartDate !=
-                    startDate.Value)
+                    newStartDate)
                 {
                     currentRotation.StartDate =
-                        startDate.Value;
+                        newStartDate;
 
                     changed = true;
                 }
-
 
                 if (currentRotation.EndDate !=
-                    endDate.Value)
+                    newEndDate)
                 {
                     currentRotation.EndDate =
-                        endDate.Value;
+                        newEndDate;
 
                     changed = true;
                 }
-
 
                 if (changed)
                 {
                     rotationsUpdated++;
                 }
 
+                // =================================================
+                // حذف تكرارات نفس الطبيب والقسم
+                // =================================================
 
-                foreach (var duplicate
-                    in rotations.Skip(1))
+                foreach (var duplicate in
+                         rotations.Skip(1))
                 {
-                    _context.TrainingRotations.Remove(
-                        duplicate);
+                    _context.TrainingRotations
+                        .Remove(duplicate);
 
                     rotationsDeleted++;
                 }
             }
         }
 
+        // =========================================================
+        // تحويل التاريخ إلى UTC
+        // =========================================================
+
+        private static DateTime? ToUtcDate(
+            DateTime? value)
+        {
+            if (!value.HasValue)
+            {
+                return null;
+            }
+
+            return DateTime.SpecifyKind(
+                value.Value.Date,
+                DateTimeKind.Utc);
+        }
 
         // =========================================================
-        // Model استقبال البيانات من Visual Basic
+        // تجهيز جميع DateTime قبل PostgreSQL
+        // =========================================================
+
+        private void PrepareDatesForPostgreSql()
+        {
+            foreach (var entry in
+                     _context.ChangeTracker.Entries())
+            {
+                foreach (var property in
+                         entry.Properties)
+                {
+                    // CurrentValue
+                    if (property.CurrentValue
+                        is DateTime currentDate)
+                    {
+                        property.CurrentValue =
+                            DateTime.SpecifyKind(
+                                currentDate,
+                                DateTimeKind.Utc);
+                    }
+
+                    // OriginalValue
+                    if (property.OriginalValue
+                        is DateTime originalDate)
+                    {
+                        property.OriginalValue =
+                            DateTime.SpecifyKind(
+                                originalDate,
+                                DateTimeKind.Utc);
+                    }
+                }
+            }
+        }
+
+        // =========================================================
+        // حفظ آمن مع تشخيص DateTime
+        // =========================================================
+
+        private async Task SaveChangesSafeAsync(
+            string operation)
+        {
+            try
+            {
+                PrepareDatesForPostgreSql();
+
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                var details =
+                    GetDateTimeDiagnostics();
+
+                throw new Exception(
+                    "فشل حفظ البيانات أثناء العملية: "
+                    + operation
+                    + Environment.NewLine
+                    + Environment.NewLine
+                    + details,
+                    ex);
+            }
+        }
+
+        // =========================================================
+        // تشخيص قيم DateTime
+        // =========================================================
+
+        private string GetDateTimeDiagnostics()
+        {
+            var result =
+                new System.Text.StringBuilder();
+
+            result.AppendLine(
+                "تشخيص قيم التاريخ:");
+
+            foreach (var entry in
+                     _context.ChangeTracker.Entries())
+            {
+                foreach (var property in
+                         entry.Properties)
+                {
+                    if (property.CurrentValue
+                        is DateTime dateTime)
+                    {
+                        result.AppendLine(
+                            "Entity = "
+                            + entry.Entity.GetType().Name
+                            + " | Property = "
+                            + property.Metadata.Name
+                            + " | Value = "
+                            + dateTime.ToString("O")
+                            + " | Kind = "
+                            + dateTime.Kind);
+                    }
+
+                    if (property.OriginalValue
+                        is DateTime originalDateTime)
+                    {
+                        result.AppendLine(
+                            "Original Entity = "
+                            + entry.Entity.GetType().Name
+                            + " | Property = "
+                            + property.Metadata.Name
+                            + " | Value = "
+                            + originalDateTime.ToString("O")
+                            + " | Kind = "
+                            + originalDateTime.Kind);
+                    }
+                }
+            }
+
+            return result.ToString();
+        }
+
+        // =========================================================
+        // نموذج المزامنة
         // =========================================================
 
         public class DoctorSyncModel
